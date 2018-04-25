@@ -27,7 +27,6 @@ cache:
 
 install:
   - yarn
-  - cd app && yarn
 
 script:
   - yarn package
