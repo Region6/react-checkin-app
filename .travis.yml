@@ -30,6 +30,4 @@ install:
   - cd app && yarn
 
 script:
-  - node --version
-  - yarn lint
-  - yarn package
+  - cd app && yarn package
