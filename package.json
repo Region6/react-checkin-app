@@ -1,5 +1,5 @@
 {
-  "name": "checkin-app",
+  "name": "react-checkin-app",
   "productName": "Region6CheckinApp",
   "version": "1.0.0",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
@@ -76,16 +76,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mattvoss/checkin-app.git"
+    "url": "git+https://github.com/Region6/react-checkin-app.git"
   },
   "author": {
     "name": "Matt Voss",
     "email": "voss.matthew@gmail.com",
-    "url": "https://github.com/mattvoss"
+    "url": "https://github.com/Region6/react-checkin-app"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mattvoss/checkin-app/issues"
+    "url": "https://github.com/Region6/react-checkin-app/issues"
   },
   "keywords": [
     "electron",
@@ -98,7 +98,7 @@
     "hot",
     "reload"
   ],
-  "homepage": "https://github.com/mattvoss/checkin-app#readme",
+  "homepage": "https://github.com/Region6/react-checkin-app#readme",
   "jest": {
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/internals/mocks/fileMock.js",
