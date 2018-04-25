@@ -30,4 +30,4 @@ install:
   - cd app && yarn
 
 script:
-  - cd app && yarn package
+  - yarn package
