@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Receipt</title>
+  <link rel="stylesheet" href="{{dirname}}dist/css/normalize.min.css" />
+  <link rel="stylesheet" href="{{dirname}}dist/css/paper.css" />
+  <style>
+    @page { size: letter };
+    h1{
+      font-size: 1.5em;
+      color: #222;
+    }
+    h2{font-size: .9em;}
+    h3{
+      font-size: 1.2em;
+      font-weight: 300;
+      line-height: 2em;
+    }
+    p{
+      font-size: .7em;
+      color: #666;
+      line-height: 1.2em;
+    }
+
+    [id*='invoice-']{ /* Targets all id with 'col-' */
+      border-bottom: 1px solid #EEE;
+      padding: 30px;
+    }
+
+    #invoice-top {
+      min-height: 80px;
+    }
+    #invoice-mid {
+      min-height: 120px;
+    }
+    #invoice-bot {
+      min-height: 250px;
+    }
+
+    .info {
+      display: block;
+      float:left;
+      margin-left: 20px;
+    }
+    .title{
+      float: right;
+    }
+    .title p{text-align: right;}
+    #project{margin-left: 52%;}
+    table{
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td{
+      padding: 5px 0 5px 15px;
+      border: 1px solid #EEE
+    }
+    .tabletitle{
+      padding: 5px;
+      background: #EEE;
+    }
+    .service{border: 1px solid #EEE;}
+    .item{width: 50%;}
+    .itemtext{font-size: .9em;}
+
+    #legalcopy{
+      margin-top: 30px;
+    }
+    
+    .legal {
+      width:70%;
+    }
+  </style>
+  <link href='/dist/css/fonts.css' rel='stylesheet' type='text/css' />
+</head>
+<body class="letter padding-10mm">
+  <section class="sheet">
+    <div id="invoice">
+      <div id="invoice-top">
+        <div class="info">
+          <h2>Region VI VPPP</h2>
+          <p>5120 Stagecoach Rd.<br />
+              College Station, TX<br />
+              77845
+          </p>
+        </div><!--End Info-->
+        <div class="title">
+          <h2>
+            Confirmation # {{registrant.biller.confirmation}}
+          </h2>
+          <p>
+            Issued: {{formatDate registrant.transactions.0.submitTimeLocal day="numeric" month="long" year="numeric"}}</br>
+          </p>
+        </div><!--End Title-->
+      </div><!--End InvoiceTop-->
+  
+      <div id="invoice-mid">
+        <div class="info">
+          <h2>{{registrant.biller.firstname}} {{registrant.biller.lastname}}</h2>
+          <p>
+            {{registrant.biller.organization}}<br />
+            {{registrant.biller.address}}<br />
+            {{#if registrant.biller.address2}}
+              {{registrant.biller.address2}}<br />
+            {{/if}}
+            {{registrant.biller.city}}, {{registrant.biller.state}} {{registrant.biller.zip}}<br />
+          </p>
+        </div>
+        <div id="project">
+          <h2>Payment Method</h2>
+          {{#if registrant.transactions.length}}
+            <p>
+              <strong>Card:</strong> {{registrant.transactions.0.cardType}}<br />
+              <strong>Number:</strong> {{registrant.transactions.0.cardNumber}}<br />
+              <strong>Transaction ID:</strong> {{registrant.transactions.0.transId}}<br />
+            </p>
+          {{/if}}
+        </div>
+      </div><!--End Invoice Mid-->
+      
+      <div id="invoice-bot">
+        {{#if registrant.transactions.length}}
+          <div id="table">
+            <table>
+              <tr class="tabletitle">
+                <td class="item"><h2>Item Description</h2></td>
+                <td class="Hours"><h2>Quantity</h2></td>
+                <td class="subtotal"><h2>Sub-total</h2></td>
+              </tr>
+              
+              <tr class="service">
+                <td class="tableitem"><p class="itemtext">{{registrant.transactions.0.description}}</p></td>
+                <td class="tableitem"><p class="itemtext">1</p></td>
+                <td class="tableitem"><p class="itemtext">{{registrant.transactions.0.settleAmount}}</p></td>
+              </tr>
+
+              <tr class="tabletitle">
+                <td></td>
+                <td class="Hours"><h2>Total</h2></td>
+                <td class="payment"><h2>{{registrant.transactions.0.settleAmount}}</h2></td>
+              </tr>
+              
+            </table>
+          </div><!--End Table-->
+        {{/if}}
+        
+        <div id="legalcopy">
+          <p class="legal">
+            <strong>Thank you for your business!</strong>
+          </p>
+        </div>
+        
+      </div><!--End InvoiceBot-->
+    </div><!--End Invoice-->
+  </section>
+</body>
+</html>
