@@ -248,13 +248,6 @@ export default merge.smart(baseConfig, {
     }),
     new CopyWebpackPlugin([
       {
-        from: 'app/images',
-        to: 'images',
-        flatten: true,
-      },
-    ]),
-    new CopyWebpackPlugin([
-      {
         from: 'app/assets/styles',
         to: 'css',
         flatten: true,

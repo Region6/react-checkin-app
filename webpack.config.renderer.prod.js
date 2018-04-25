@@ -202,13 +202,6 @@ export default merge.smart(baseConfig, {
     new ExtractTextPlugin('style.css'),
     new CopyWebpackPlugin([
       {
-        from: 'app/images',
-        to: 'images',
-        flatten: true,
-      },
-    ]),
-    new CopyWebpackPlugin([
-      {
         from: 'app/assets/styles',
         to: 'css',
         flatten: true,
