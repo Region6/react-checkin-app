@@ -136,13 +136,12 @@ app.on('ready', async () => {
     'new-window',
     (event, url, frameName, disposition, options, additionalFeatures) => {
       if (frameName === 'view') {
-        // open window as modal
+        // open window
         event.preventDefault();
         const opts = Object.assign(
           {},
           options,
           {
-            modal: true,
             parent: mainWindow,
             width: 850,
             height: 500,
