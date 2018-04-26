@@ -90,7 +90,13 @@
             Confirmation # {{registrant.biller.confirmation}}
           </h2>
           <p>
-            Issued: {{formatDate registrant.transactions.0.submitTimeLocal day="numeric" month="long" year="numeric"}}</br>
+            Issued: 
+            {{#if registrant.transactions.length}}
+              {{formatDate registrant.transactions.0.submitTimeLocal day="numeric" month="long" year="numeric"}}
+            {{else}}
+              No Date
+            {{/if}}
+            </br>
           </p>
         </div><!--End Title-->
       </div><!--End InvoiceTop-->
