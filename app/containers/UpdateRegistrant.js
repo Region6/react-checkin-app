@@ -172,11 +172,19 @@ class UpdateRegistrant  extends Component {
     const { registrant, updateRegistrant } = store;
 
     const goBack = () => history.push('/dashboard');
-    const save = () => {
+    const save = async () => {
+      let result;
       if (registrant.id) {
-        store.saveRegistrant(registrant);
+        result = await store.saveRegistrant(registrant);
       } else {
-        store.saveNewRegistrant();
+        result = await store.saveNewRegistrant();
+        if (result.data) {
+          store.filters.replace([{
+            columnName: 'displayId',
+            value: result.data.registrantId,
+          }]);
+          history.push('/dashboard');
+        }
       }
     }
     const handleChange = (event) => {
