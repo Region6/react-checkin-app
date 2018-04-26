@@ -145,7 +145,7 @@ export default class Store {
     totalRegistrants: 800,
     checkedIn: 147,
   };
-  scanner = new Swipe.Scanner();
+  cardScanner = new Swipe.Scanner();
   serialport;
   request;
   logRocket;
@@ -160,7 +160,7 @@ export default class Store {
     console.log('datapath', storage.getDataPath(), storage.getAll());
 
     const swipe = new Swipe({
-      scanner: this.scanner,
+      scanner: this.cardScanner,
       onScan: (data) => {
         console.log('swipe', data);
         const card = {
@@ -323,7 +323,7 @@ export default class Store {
     try {
       this.swipe = new HID.HID(0x0801, 0x0002);
       this.swipe.on("data", (data) => {
-        self.scanner.input(data.toString());
+        self.cardScanner.input(data.toString());
       });
     } catch (e) {
       console.log(e);
@@ -656,14 +656,12 @@ export default class Store {
   }
 
   @action getEvents = async () => {
-    this.events = [];
     const records = await this.request.get('/events/onsite');
     this.events = records.data;
     return this.events;
   }
 
   @action getSiteIds = async () => {
-    this.events = [];
     const records = await this.request.get('/siteIds');
     this.siteIds = records.data;
     return this.siteIds;
@@ -771,19 +769,31 @@ export default class Store {
   }
 
   @action saveNewRegistrant = async () => {
+    this.snackBar.message = 'Creating registrant...';
+    this.snackBar.open = true;
     const registrant = fields.reduce((result, key) => { result[key] = this.registrant[key]; return result; }, {});
+    const event = this.events.find(e => e.title === 'Attendee');
     const record = {
       type: 'create',
       fields: registrant,
       id: null,
       type: (this.registrant.exhibitor) ? 'E' : 'G',
-      event: this.events[1],
+      event,
     };
-    const result = await this.request.post(
-      `/registrants`,
-      record,
-    );
-    return this.db.update('registrants', result.data);
+    let result;
+    try {
+      result = await this.request.post(
+        `/registrants`,
+        record,
+      );
+      this.db.update('registrants', result.data);
+      this.snackBar.message = 'Registrant created';
+    } catch(e) {
+      result = e;
+      this.snackBar.message = 'Error creating registrant';
+    }
+
+    return result;
   }
 
   renderReceipt = (registrant) => {
@@ -855,10 +865,14 @@ export default class Store {
         `/payment`,
         record,
       );
+      this.db.update('registrants', result.data);
       this.clearCreditCard();
-    } catch(e) {
-      this.snackBar.message = 'Payment failed...';
+      this.snackBar.message = 'Payment successful';
       this.snackBar.open = true;
+    } catch(e) {
+      this.snackBar.message = 'Payment failed';
+      this.snackBar.open = true;
+      result = e;
     }
     //const registrant = this.db.update('registrants', result.data);
     //this.loading = false;

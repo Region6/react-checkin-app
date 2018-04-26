@@ -210,7 +210,15 @@ class Payment  extends Component {
       goBack();
     }
     const save = async () => {
-      await store.makePayment(this.tab, this.amount, null);
+      let result;
+      result = await store.makePayment(this.tab, this.amount, null);
+      if (result.data) {
+        store.filters.replace([{
+          columnName: 'displayId',
+          value: result.data.registrantId,
+        }]);
+        history.push('/dashboard');
+      }
     }
 
     return (
