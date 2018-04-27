@@ -101,9 +101,18 @@ export default class Store {
     selectedDevices: [],
     apiUrl: '',
     token: '',
-  }
+  };
+  @observable paging = {
+    page: 0,
+    limit: 50,
+  };
+  @observable count = {
+    exhibitors: 0,
+    general: 0,
+  };
   @observable ports = [];
   @observable filters = [];
+  @observable sorting = [];
   @observable expandedRows = [];
   @observable events = [];
   @observable templates = [];
@@ -187,6 +196,16 @@ export default class Store {
         }
       },
       { delay: 900 }
+    );
+
+    const disposerSorting = autorun(
+      () => {
+        console.log(this.sorting);
+        if (this.sorting.length > 0) {
+          this.filterRegistrants();
+        } 
+      },
+      { delay: 10 }
     );
 
     const disposerSettings = autorun(
@@ -596,12 +615,14 @@ export default class Store {
     return this.expandedRows;
   }
 
-  @action async filterRegistrants() {
+  @action async filterRegistrants(exhibitorsOnly) {
     this.loading = true;
     const record = {
       filters: this.filters,
-      page: 0,
-      limit: 10,
+      sorting: this.sorting,
+      exhibitors: (exhibitorsOnly) ? 1 : 0,
+      page: this.paging.page,
+      limit: this.paging.limit,
     };
     const result = await this.request.post(
       `/search`,
@@ -922,5 +943,56 @@ export default class Store {
       this.creditCard,
       card,
     );
+  }
+
+  @action importData = async (type, file) => {
+    const result = await this.request.post(
+      `/import/${type}`,
+      file,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      }
+    );
+    return result;
+  }
+
+  @action downloadTransactions = async () => {
+    const result = await this.request.get('/transactions/download');
+
+    return result;
+  }
+
+  @action getExhibitors = async (page) => {
+    this.paging.page = page;
+    this.paging.limit = 50;
+    this.sorting.push({
+      columnName: 'organization',
+      direction: 'asc',
+    });
+    const registrants = await this.filterRegistrants(true);
+    return registrants;
+  }
+
+  @action getAttendeeCount = async (exhibitors) => {
+    const type = (exhibitors) ? 'exhibitors' : 'general';
+    const result = await this.request.get(`/census/${type}`);
+    if (result.data) {
+      this.count[type] = result.data[0].total;
+    }
+    return this.count;
+  }
+
+  getExhPrintPages = () => {
+    let retVal = [];
+    if (this.count.exhibitors > 0) {
+      const pageCount = Math.ceil(this.count.exhibitors / 50);
+      for(let i=0;i<pageCount;i++) {
+        retVal.push(i);
+      }
+    }
+
+    return retVal;
   }
 }

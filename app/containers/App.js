@@ -120,6 +120,11 @@ class App extends Component {
     history.push('/registrant/add');
   }
 
+  navigate = path => e => {
+    const { store, history } = this.props;
+    history.push(path);
+  }
+
   clickProgram = (id, e) => {
     const { history } = this.props;
     history.push(`/a/program/${id}`);
@@ -163,6 +168,14 @@ class App extends Component {
               </ListItem>
             </List>
             <Divider />
+            <List>
+              <ListItem button>
+                <ListItemText
+                  primary="Admin"
+                  onClick={this.navigate('/admin')}
+                />
+              </ListItem>
+            </List>
           </div>
         </Drawer>
         <AppBar position="sticky" className={classes.appBar}>

@@ -1,0 +1,47 @@
+@-webkit-keyframes progress {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: -75px 0;
+    }
+}
+
+@-moz-keyframes progress {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: -75px 0;
+    }
+}
+
+@-ms-keyframes progress {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: -75px 0;
+    }
+}
+
+@keyframes progress {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: -70px 0;
+    }
+}
+
+.imageContainer:hover .smallPreviewImg {
+    opacity: "0.3";
+}
+
+.imageContainer:hover .middle {
+    opacity: "1";
+}
+
+.imageContainer:hover .middleBigPic {
+    opacity: "1";
+}

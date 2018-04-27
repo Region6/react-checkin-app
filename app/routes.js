@@ -6,6 +6,7 @@ import App from './containers/App';
 import Dashboard from './containers/Dashboard';
 import Payment from './containers/Payment';
 import UpdateRegistrant from './containers/UpdateRegistrant';
+import Admin from './containers/Admin';
 
 export default inject('store')(observer(({ store }) => {
   const UpdateRegistrantBefore = ({ component: Component, ...rest }) => {
@@ -26,6 +27,7 @@ export default inject('store')(observer(({ store }) => {
         <UpdateRegistrantBefore exact path="/registrant/add" component={UpdateRegistrant} />
         <Route exact path="/registrant/:id" component={UpdateRegistrant} />
         <Route exact path="/registrant/:id/payment" component={Payment} />
+        <Route exact path="/admin" component={Admin} />
       </Switch>
     </App>
   );

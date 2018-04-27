@@ -251,7 +251,7 @@ class UpdateRegistrant  extends Component {
                     <FormControlLabel
                       control={
                         <Switch
-                          checked={registrant.speaker ? true : false}
+                          checked={registrant.osha ? true : false}
                           onChange={selectType('osha')}
                           value="osha"
                         />

@@ -17,6 +17,7 @@ import {
   IntegratedFiltering,
   RowDetailState,
   PagingState,
+  SortingState,
   IntegratedPaging,
 } from '@devexpress/dx-react-grid';
 import {
@@ -137,6 +138,9 @@ const RegistrantsView = inject('store')(observer(({ classes, store }) => {
   const changePageSize = pageSize => store.page.size = pageSize;
   const changeExpandedDetails = expandedRowIds => store.updateExpandedRows(expandedRowIds);
   const changeFilters = filters => store.updateFilters(filters);
+  const changeSorting = sorting => {
+    store.sorting = sorting;
+  };
   const handleChange = (event) => {
     store.updateNoConflict(event.target.checked);
   };
@@ -165,9 +169,13 @@ const RegistrantsView = inject('store')(observer(({ classes, store }) => {
           pageSize={toJS(store.page.size)}
           onPageSizeChange={changePageSize}
         />
+        <SortingState
+          sorting={toJS(store.sorting)}
+          onSortingChange={changeSorting}
+        />
         <IntegratedPaging />
         <Table rowComponent={TableRow} />
-        <TableHeaderRow />
+        <TableHeaderRow showSortingControls />
         <TableFilterRow />
         <TableRowDetail
           contentComponent={RowDetail}
