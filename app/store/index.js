@@ -1,6 +1,7 @@
 import { remote } from 'electron'; 
 import path from 'path';
 import { observable, autorun, action, computed, toJS } from 'mobx';
+import { createViewModel } from 'mobx-utils';
 import axios from 'axios';
 import readFile from 'fs-readfile-promise';
 import arraySort from 'arr-sort';
@@ -54,6 +55,33 @@ Handlebars.registerHelper ('truncate', function (str, len) {
   }
   return str;
 });
+Handlebars.registerHelper({
+  eq: function (v1, v2) {
+      return v1 === v2;
+  },
+  ne: function (v1, v2) {
+      return v1 !== v2;
+  },
+  lt: function (v1, v2) {
+      return v1 < v2;
+  },
+  gt: function (v1, v2) {
+      return v1 > v2;
+  },
+  lte: function (v1, v2) {
+      return v1 <= v2;
+  },
+  gte: function (v1, v2) {
+      return v1 >= v2;
+  },
+  and: function () {
+      return Array.prototype.slice.call(arguments).every(Boolean);
+  },
+  or: function () {
+      return Array.prototype.slice.call(arguments).some(Boolean);
+  }
+});
+
 
 const app = remote.app;
 const rootFolder = process.env.NODE_ENV === 'development' 
@@ -117,9 +145,12 @@ export default class Store {
   @observable events = [];
   @observable templates = [];
   @observable siteIds = [];
+  @observable userIds = [];
   @observable siteIdsFiltered = [];
+  @observable userIdsFiltered = [];
   @observable loading = false;
   @observable siteIdQuery = '';
+  @observable userIdQuery = '';
   @observable scannerData = [];
   @observable creditCard = {
     cardNumber: '',
@@ -244,6 +275,16 @@ export default class Store {
       { delay: 900 }
     );
 
+    const disposerUserIds = autorun(
+      () => {
+        console.log(this.userIdQuery);
+        if (this.userIdQuery && this.userIdQuery.length > 2) {
+          this.searchUserIds(this.userIdQuery);
+        }
+      },
+      { delay: 900 }
+    );
+
     const disposerScannerData = autorun(
       () => {
         console.log(this.scannerData);
@@ -283,6 +324,7 @@ export default class Store {
       await this.getRegistrants();
       await this.getEvents();
       await this.getSiteIds();
+      await this.getUserIds();
       await this.getStats();
       this.setupMagSwipe();
       usbDetect.on(
@@ -487,6 +529,8 @@ export default class Store {
         this.registrant.lastname = titleCase(barcode.name().last);
         this.registrant.address = titleCase(barcode.address);
         this.registrant.city = titleCase(barcode.city);
+        const state = this.getCountryState('US', barcode.state);
+        this.registrant.state = (state) ? state.name : ''; 
         this.registrant.zip = barcode.postal_code;
       }
     }
@@ -526,6 +570,10 @@ export default class Store {
 
   getCountryStates = (country) => {
     return provinces.filter(r => r.country === country);
+  }
+
+  getCountryState = (country, state) => {
+    return provinces.find(r => r.country === country && r.short === state);
   }
 
   getSelectedPrinter = (type) => {
@@ -585,6 +633,7 @@ export default class Store {
 
   @action setRegistrant = async (id) => {
     let record = this.db.getRecord('registrants', id);
+    record = createViewModel(record);
     if (!record) {
       record = await this.request.get(`/registrants/${id}`);
       record = record.data[0];
@@ -688,6 +737,12 @@ export default class Store {
     return this.siteIds;
   }
 
+  @action getUserIds = async () => {
+    const records = await this.request.get('/userIds');
+    this.userIds = records.data;
+    return this.userIds;
+  }
+
   createBarcode = async (registrant) => {
     const badgeFields = [
       "confirmation",
@@ -751,7 +806,7 @@ export default class Store {
     } else {
       registrants = [data];
     }
-    registrants = await map(registrants, this.createBarcode);
+    registrants = await mapSeries(registrants, this.createBarcode);
     return template.src({
       dirname,
       registrants,
@@ -867,12 +922,40 @@ export default class Store {
       minMatchCharLength: 2,
       keys: [
         "company",
+        "siteId",
       ]
     };
     const fuse = new Fuse(this.siteIds, options);
     const records = fuse.search(search);
     this.siteIdsFiltered.replace(records);
     return this.siteIdsFiltered;
+  }
+
+  @action searchUserIds = (search) => {
+    const options = {
+      shouldSort: true,
+      threshold: 0.3,
+      location: 0,
+      distance: 100,
+      maxPatternLength: 32,
+      minMatchCharLength: 2,
+      keys: [
+        "organization",
+      ]
+    };
+    const fuse = new Fuse(this.userIds, options);
+    const records = fuse.search(search);
+    this.userIdsFiltered.replace(records);
+    return this.userIdsFiltered;
+  }
+
+  getUserIdCompanyName = (userId) => {
+    let retVal = userId ? userId : this.userIdQuery ? this.userIdQuery : '';
+    const user = this.userIds.find(r => r.id === userId);
+    if (user) {
+      retVal = `${user.organization} - ${user.address} ${user.city}, ${user.state}`;
+    }
+    return retVal;
   }
 
   @action makePayment = async (type, amount, check) => {

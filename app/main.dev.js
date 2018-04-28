@@ -123,7 +123,9 @@ app.on('ready', async () => {
     }
     mainWindow.show();
     mainWindow.focus();
-    mainWindow.openDevTools();
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+      mainWindow.openDevTools();
+    }
   });
 
   mainWindow.on('closed', () => {

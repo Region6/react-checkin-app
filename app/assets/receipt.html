@@ -115,10 +115,16 @@
         </div>
         <div id="project">
           <h2>Payment Method</h2>
-          {{#if registrant.transactions.length}}
+          {{#if (eq registrant.transactions.0.transactionType "authCaptureTransaction")}}
             <p>
               <strong>Card:</strong> {{registrant.transactions.0.cardType}}<br />
               <strong>Number:</strong> {{registrant.transactions.0.cardNumber}}<br />
+              <strong>Transaction ID:</strong> {{registrant.transactions.0.transId}}<br />
+            </p>
+          {{/if}}
+          {{#if (eq registrant.transactions.0.transactionType "check")}}
+            <p>
+              <strong>Check Number:</strong> {{registrant.transactions.0.cardNumber}}<br />
               <strong>Transaction ID:</strong> {{registrant.transactions.0.transId}}<br />
             </p>
           {{/if}}

@@ -102,10 +102,22 @@ const renderInput = (inputProps) => {
     <TextField
       fullWidth
       InputProps={{
+        shrink: true,
         inputRef: ref,
         ...other,
       }}
     />
+  );
+}
+
+const renderUserId = (suggestion, { query, isHighlighted }) => {
+  // const matches = match(`${suggestion.company} - ${suggestion.street1} ${suggestion.city}, ${suggestion.state}`, query);
+  // const parts = parse(`${suggestion.company} - ${suggestion.street1} ${suggestion.city}, ${suggestion.state}`, matches);
+
+  return (
+    <MenuItem selected={isHighlighted} component="div">
+      [{suggestion.id}] {suggestion.organization} - {suggestion.street}&nbsp;{suggestion.city}, {suggestion.state}
+    </MenuItem>
   );
 }
 
@@ -115,7 +127,7 @@ const renderSuggestion = (suggestion, { query, isHighlighted }) => {
 
   return (
     <MenuItem selected={isHighlighted} component="div">
-      {suggestion.company} - {suggestion.street1} {suggestion.city}, {suggestion.state}
+      [{suggestion.siteId}] {suggestion.company} - {suggestion.street1}&nbsp;{suggestion.city}, {suggestion.state}
     </MenuItem>
   );
 }
@@ -136,6 +148,8 @@ class UpdateRegistrant  extends Component {
   componentDidMount() {
     const { classes, store, match, history } = this.props;
     console.log(match);
+    store.siteIdQuery = '';
+    store.userIdQuery = '';
     if (match.params.id) {
       store.setRegistrant(match.params.id);
     }
@@ -165,6 +179,36 @@ class UpdateRegistrant  extends Component {
   handleSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
     const { store } = this.props;
     store.registrant.siteId = suggestion.siteId;
+    store.registrant.address = suggestion.street1;
+    store.registrant.address2 = suggestion.street2;
+    store.registrant.city = suggestion.city;
+    const state = store.getCountryState('US', suggestion.state);
+    store.registrant.state = (state) ? state.name : '';
+    store.registrant.zip = suggestion.zipCode;
+  }
+
+  getUserId = (inputValue) => {
+    const { store } = this.props;
+    if (typeof inputValue === 'object') {
+      store.registrant.userId = inputValue.id;
+    } else {
+      store.userIdQuery = inputValue;
+    }
+  }
+
+  handleUserIdFetchRequested = ({ value }) => {
+    console.log('handleUserIdFetchRequested', value);
+    this.getUserId(value);
+  }
+
+  handleUserIdClearRequested = () => {
+    const { store } = this.props;
+    store.userIdsFiltered.clear();
+  }
+
+  handleUserIdSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
+    const { store } = this.props;
+    store.registrant.userId = suggestion.id;
   }
 
   render() {
@@ -206,6 +250,16 @@ class UpdateRegistrant  extends Component {
       console.log('handleSiteIdChange', newValue);
       //updateRegistrant('siteId', newValue);
       store.siteIdQuery = newValue;
+    };
+
+    const handleUserIdChange = (event, { newValue, method }) => {
+      console.log('handleSiteIdChange', newValue);
+      //updateRegistrant('siteId', newValue);
+      store.userIdQuery = newValue;
+    };
+
+    const clearSiteId = () => {
+      registrant.siteId = '';
     };
 
     return (
@@ -259,6 +313,34 @@ class UpdateRegistrant  extends Component {
                       label="OSHA"
                     />
                   </FormGroup>
+                  {registrant.exhibitor ? 
+                    <FormControl fullWidth>
+                      <Autosuggest
+                        theme={{
+                          container: classes.suggestionsContainer,
+                          suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                          suggestionsList: classes.suggestionsList,
+                          suggestion: classes.suggestion,
+                        }}
+                        renderInputComponent={renderInput}
+                        suggestions={toJS(store.userIdsFiltered)}
+                        onSuggestionsFetchRequested={this.handleUserIdFetchRequested}
+                        onSuggestionsClearRequested={this.handleUserIdClearRequested}
+                        onSuggestionSelected={this.handleUserIdSelected}
+                        renderSuggestionsContainer={renderSuggestionsContainer}
+                        getSuggestionValue={this.getUserId}
+                        renderSuggestion={renderUserId}
+                        inputProps={{
+                          classes,
+                          shrink: true,
+                          placeholder: 'Search for an Exhibitor',
+                          value: store.getUserIdCompanyName(registrant.userId),
+                          onChange: handleUserIdChange,
+                        }}
+                      />
+                    </FormControl>
+                    : null
+                  }
                   <TextField
                     id="name"
                     label="First Name"
@@ -314,28 +396,35 @@ class UpdateRegistrant  extends Component {
                     margin="normal"
                     fullWidth
                   />
-                  <Autosuggest
-                    theme={{
-                      container: classes.suggestionsContainer,
-                      suggestionsContainerOpen: classes.suggestionsContainerOpen,
-                      suggestionsList: classes.suggestionsList,
-                      suggestion: classes.suggestion,
-                    }}
-                    renderInputComponent={renderInput}
-                    suggestions={toJS(store.siteIdsFiltered)}
-                    onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
-                    onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
-                    onSuggestionSelected={this.handleSuggestionSelected}
-                    renderSuggestionsContainer={renderSuggestionsContainer}
-                    getSuggestionValue={this.getSuggestions}
-                    renderSuggestion={renderSuggestion}
-                    inputProps={{
-                      classes,
-                      placeholder: 'Search for a Site Id',
-                      value: store.getSiteIdCompanyName(registrant.siteId),
-                      onChange: handleSiteIdChange,
-                    }}
-                  />
+                  <FormControl fullWidth>
+                    <Autosuggest
+                      theme={{
+                        container: classes.suggestionsContainer,
+                        suggestionsContainerOpen: classes.suggestionsContainerOpen,
+                        suggestionsList: classes.suggestionsList,
+                        suggestion: classes.suggestion,
+                      }}
+                      renderInputComponent={renderInput}
+                      suggestions={toJS(store.siteIdsFiltered)}
+                      onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
+                      onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
+                      onSuggestionSelected={this.handleSuggestionSelected}
+                      renderSuggestionsContainer={renderSuggestionsContainer}
+                      getSuggestionValue={this.getSuggestions}
+                      renderSuggestion={renderSuggestion}
+                      inputProps={{
+                        classes,
+                        placeholder: 'Search for a Site Id',
+                        value: store.getSiteIdCompanyName(registrant.siteId),
+                        onChange: handleSiteIdChange,
+                      }}
+                    />
+                    <Button
+                      onClick={clearSiteId}
+                      color="primary">
+                      Clear
+                    </Button>
+                  </FormControl>
                   <TextField
                     label="Street Address 1"
                     className={classes.formControl}
@@ -374,6 +463,9 @@ class UpdateRegistrant  extends Component {
                         Select State
                       </MenuItem>
                       {store.getCountryStates('US').map(state => (
+                        <MenuItem key={state.name} value={state.name}>{state.name}</MenuItem>
+                      ))}
+                      {store.getCountryStates('CA').map(state => (
                         <MenuItem key={state.name} value={state.name}>{state.name}</MenuItem>
                       ))}
                     </Select>

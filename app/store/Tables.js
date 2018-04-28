@@ -23,6 +23,7 @@ export default class Registrant {
   @observable groupConfirm = "";
   @observable speaker = false;
   @observable exhibitor = false;
+  @observable osha = false;
   @observable createdAt = "";
   @observable updatedAt = "";
   @observable deletedAt = null;
