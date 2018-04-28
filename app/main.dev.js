@@ -43,7 +43,7 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-const print = (mimeType, src, printer) => {
+const print = (src, printer) => {
   let win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -52,7 +52,7 @@ const print = (mimeType, src, printer) => {
       webSecurity: false,
     }
   });
-  win.loadURL(`data:text/html;charset=utf-8,${encodeURI(src)}`);
+  win.loadURL(`data:text/html;charset=utf-8,${src}`);
  // if pdf is loaded start printing.
   win.webContents.on('did-finish-load', () => {
     /*
@@ -112,7 +112,7 @@ app.on('ready', async () => {
 
   ipcMain.on('print', (event, arg) => {
     console.log('Printing...');
-    print(arg.mimeType, arg.src, arg.printer);
+    print(arg.src, arg.printer);
   });
 
   // @TODO: Use 'ready-to-show' event

@@ -179,7 +179,7 @@ class Payment  extends Component {
   handleTextChange = (name, check) => event => {
     const { store } = this.props;
     if (check) {
-      store.check[number] = event.target.value;
+      store.check[name] = event.target.value;
     } else {
       store.creditCard[name] = event.target.value;
     }
@@ -198,6 +198,19 @@ class Payment  extends Component {
 
   handleTabChange = (event, value) => {
     this.tab = value;
+  }
+
+  paymentDisabled = () => {
+    const { store } = this.props;
+    let disabled = false;
+
+    if (this.tab === 'check') {
+      disabled = (store.check.number.length < 1 || this.amount === "0.00") ? true : disabled;
+    } else {
+      disabled = (!store.isCardValid() || this.amount === "0.00") ? true : disabled;
+    }
+
+    return disabled;
   }
 
   render() {
@@ -351,7 +364,7 @@ class Payment  extends Component {
             <Divider />
             <CardActions>
               <Button
-                disabled={!store.isCardValid() || this.amount === "0.00"}
+                disabled={this.paymentDisabled()}
                 onClick={save}
                 color="primary">
                 Make Payment

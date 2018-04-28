@@ -160,6 +160,9 @@ class Admin  extends Component {
             <Divider />
             <CardContent>
               <div className={classes.container}>
+                <Typography variant="title">
+                  Batch Exhibitor Badge Printing
+                </Typography>
                 <Select
                   value={this.exhibitorPage}
                   displayEmpty
@@ -167,7 +170,7 @@ class Admin  extends Component {
                   fullWidth
                 >
                   <MenuItem value="">
-                    Select Page
+                    Select Batch
                   </MenuItem>
                   {store.getExhPrintPages().map(p =>
                     <MenuItem value={p} key={p}>

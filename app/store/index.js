@@ -759,19 +759,27 @@ export default class Store {
   } 
 
   @action printBadge = async (registrant) => {
-    this.proposal = null;
-    const selected = this.getSelectedPrinter('badge');
-    const src = await this.renderBadge(registrant, true);
-    if (selected) {
+    const print = async (reg) => {
+      const src = await this.renderBadge(reg, true);
       this.snackBar.message = 'Printing registrant badge...';
       this.snackBar.open = true;
       ipcRenderer.send(
         'print',
         {
-          src,
+          src: encodeURI(src),
           printer: selected.printer.name,
         }
       );
+      
+    }
+    this.proposal = null;
+    const selected = this.getSelectedPrinter('badge');
+    if (selected) {
+      if (Array.isArray(registrant)) {
+        await map(registrant, print);
+      } else {
+        await print(registrant);
+      }
     } else {
       this.snackBar.message = 'No badge printer configured...';
       this.snackBar.open = true;
@@ -868,7 +876,7 @@ export default class Store {
   }
 
   @action makePayment = async (type, amount, check) => {
-    const trans = (type === 'check') ? check : this.creditCard;
+    const trans = (type === 'check') ? this.check : this.creditCard;
     const record = {
       type,
       transaction: Object.assign(
