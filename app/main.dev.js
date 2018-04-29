@@ -126,6 +126,7 @@ app.on('ready', async () => {
     if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
       mainWindow.openDevTools();
     }
+    
   });
 
   mainWindow.on('closed', () => {

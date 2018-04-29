@@ -144,7 +144,7 @@ const SettingsDialog = inject('store')(observer(({ classes, store, history }) =>
               Select a printer...
             </MenuItem>
             {store.printers.map(printer => (
-              <MenuItem key={printer.name} value={printer.name}>{printer.description}</MenuItem>
+              <MenuItem key={printer.name} value={printer.name}>{printer.name}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -162,7 +162,7 @@ const SettingsDialog = inject('store')(observer(({ classes, store, history }) =>
               Select a printer...
             </MenuItem>
             {store.printers.map(printer => (
-              <MenuItem key={printer.name} value={printer.name}>{printer.description}</MenuItem>
+              <MenuItem key={printer.name} value={printer.name}>{printer.name}</MenuItem>
             ))}
           </Select>
         </FormControl>

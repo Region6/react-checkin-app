@@ -10,6 +10,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
+import PrintIcon from '@material-ui/icons/Print';
 import Typography from 'material-ui/Typography';
 import {
   DataTypeProvider,
@@ -63,40 +64,6 @@ const TableRow = ({ row, ...restProps }) => (
   />
 );
 
-const IconFormatter = ({ value }) => (
-  <React.Fragment>
-    {value.attend ?
-      <IconButton
-        aria-label="Checked In"
-        onClick={(...args) => checkIn(value.paddedRegId, false)}
-      >
-        <CheckCircleIcon />
-      </IconButton>
-      :
-      <IconButton
-        aria-label="Not Checked In"
-        onClick={(...args) => checkIn(value.paddedRegId, true)}
-      >
-        <RemoveCircleIcon />
-      </IconButton>
-    }
-    {value.transactions.length > 0 ?
-      <IconButton
-        aria-label="Paid"
-      >
-        <MonetizationOnIcon />
-      </IconButton> : null
-    }
-  </React.Fragment>
-);
-
-const IconTypeProvider = props => (
-  <DataTypeProvider
-    formatterComponent={IconFormatter}
-    {...props}
-  />
-);
-
 const RegistrantsView = inject('store')(observer(({ classes, store }) => {
   const { registrants } = store;
   checkIn = store.checkInRegistrant;
@@ -134,6 +101,47 @@ const RegistrantsView = inject('store')(observer(({ classes, store }) => {
   const filteringStateColumnExtensions = [
     { columnName: 'icons', filteringEnabled: false },
   ];
+
+  const IconFormatter = ({ value }) => (
+    <React.Fragment>
+      {value.attend ?
+        <IconButton
+          aria-label="Checked In"
+          onClick={(...args) => checkIn(value.paddedRegId, false)}
+        >
+          <CheckCircleIcon />
+        </IconButton>
+        :
+        <IconButton
+          aria-label="Not Checked In"
+          onClick={(...args) => checkIn(value.paddedRegId, true)}
+        >
+          <RemoveCircleIcon />
+        </IconButton>
+      }
+      {value.transactions.length > 0 ?
+        <IconButton
+          aria-label="Paid"
+        >
+          <MonetizationOnIcon />
+        </IconButton> : null
+      }
+      <IconButton
+        aria-label="Print Badge"
+        onClick={(...args) =>printBadge(value)}
+      >
+        <PrintIcon />
+      </IconButton>
+    </React.Fragment>
+  );
+  
+  const IconTypeProvider = props => (
+    <DataTypeProvider
+      formatterComponent={IconFormatter}
+      {...props}
+    />
+  );
+  
   const changeCurrentPage = currentPage => store.page.current = currentPage;
   const changePageSize = pageSize => store.page.size = pageSize;
   const changeExpandedDetails = expandedRowIds => store.updateExpandedRows(expandedRowIds);
@@ -143,6 +151,10 @@ const RegistrantsView = inject('store')(observer(({ classes, store }) => {
   };
   const handleChange = (event) => {
     store.updateNoConflict(event.target.checked);
+  };
+
+  const printBadge = (reg) => {
+    store.printBadge(reg);
   };
 
   return (

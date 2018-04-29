@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import { withStyles } from 'material-ui/styles';
+import ButtonBase from 'material-ui/ButtonBase';
 import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
 import Card, { CardActions, CardContent, CardMedia } from 'material-ui/Card';
@@ -12,6 +13,7 @@ import IconButton from 'material-ui/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
+import PrintIcon from '@material-ui/icons/Print';
 import Typography from 'material-ui/Typography';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import { withRouter } from 'react-router';
@@ -60,6 +62,15 @@ const RowDetail = inject('store')(observer(({ classes, store, row, history }) =>
   }
   const editRegistrant = () => history.push(`/registrant/${row.paddedRegId}`);
   const payment = () => history.push(`/registrant/${row.paddedRegId}/payment`);
+  const goToRegistrant = (regId) => (e) => {
+    store.filters = [];
+    store.filters.push(
+      { 
+        columnName: 'displayId',
+        value: regId,
+      }
+    );
+  }
   return (
     <Grid container spacing={24}>
       <Grid item xs={12} md={4}>
@@ -98,8 +109,20 @@ const RowDetail = inject('store')(observer(({ classes, store, row, history }) =>
                     key={p.id}
                     style={{backgroundColor: (p.attend) ? '#A5D6A7' : null}}
                   >
-                    <CustomTableCell>{p.registrantId}</CustomTableCell>
-                    <CustomTableCell>{p.lastname}, {p.firstname}</CustomTableCell>
+                    <CustomTableCell>
+                      <ButtonBase
+                        onClick={goToRegistrant(p.registrantId)}
+                      >
+                        {p.registrantId}
+                      </ButtonBase>
+                    </CustomTableCell>
+                    <CustomTableCell>
+                      <ButtonBase
+                        onClick={goToRegistrant(p.registrantId)}
+                      >
+                        {p.lastname}, {p.firstname}
+                      </ButtonBase>
+                    </CustomTableCell>
                     <CustomTableCell>
                       {p.attend ?
                         <IconButton
@@ -116,6 +139,12 @@ const RowDetail = inject('store')(observer(({ classes, store, row, history }) =>
                           <RemoveCircleIcon />
                         </IconButton>
                       }
+                      <IconButton
+                        aria-label="Print Badge"
+                        onClick={(...args) => store.printBadge(p)}
+                      >
+                        <PrintIcon />
+                      </IconButton>
                     </CustomTableCell>
                   </TableRow>
                 ))}
