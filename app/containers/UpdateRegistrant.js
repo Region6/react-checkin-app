@@ -152,6 +152,8 @@ class UpdateRegistrant  extends Component {
     store.userIdQuery = '';
     if (match.params.id) {
       store.setRegistrant(match.params.id);
+    } else {
+      store.createNewRegistrant();
     }
     console.log(store.browserHistory);
   }
@@ -182,6 +184,7 @@ class UpdateRegistrant  extends Component {
     store.registrant.address = suggestion.street1;
     store.registrant.address2 = suggestion.street2;
     store.registrant.city = suggestion.city;
+    store.registrant.organization = suggestion.company;
     const state = store.getCountryState('US', suggestion.state);
     store.registrant.state = (state) ? state.name : '';
     store.registrant.zip = suggestion.zipCode;
@@ -209,6 +212,13 @@ class UpdateRegistrant  extends Component {
   handleUserIdSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
     const { store } = this.props;
     store.registrant.userId = suggestion.id;
+    store.registrant.address = suggestion.address;
+    store.registrant.address2 = suggestion.address2;
+    store.registrant.city = suggestion.city;
+    store.registrant.organization = suggestion.organization;
+    const state = store.getCountryState('US', suggestion.state);
+    store.registrant.state = (state) ? state.name : '';
+    store.registrant.zip = suggestion.zip;
   }
 
   render() {

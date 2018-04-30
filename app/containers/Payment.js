@@ -203,12 +203,13 @@ class Payment  extends Component {
   paymentDisabled = () => {
     const { store } = this.props;
     let disabled = false;
-
+    /** 
     if (this.tab === 'check') {
       disabled = (store.check.number.length < 1 || this.amount === "0.00") ? true : disabled;
     } else {
       disabled = (!store.isCardValid() || this.amount === "0.00") ? true : disabled;
     }
+    */
 
     return disabled;
   }

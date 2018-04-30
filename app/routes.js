@@ -24,7 +24,7 @@ export default inject('store')(observer(({ store }) => {
       <Switch>
         <Route exact path="/" component={Dashboard} />
         <Route exact path="/dashboard" component={Dashboard} />
-        <UpdateRegistrantBefore exact path="/registrant/add" component={UpdateRegistrant} />
+        <Route exact path="/registrant/add" component={UpdateRegistrant} />
         <Route exact path="/registrant/:id" component={UpdateRegistrant} />
         <Route exact path="/registrant/:id/payment" component={Payment} />
         <Route exact path="/admin" component={Admin} />

@@ -106,6 +106,9 @@ const fields = [
   "dietary",
   "management",
   "speaker",
+  "osha",
+  "groupConfirm",
+  "confirmation",
 ];
 
 const isAlphaNumeric = ch => {
@@ -510,9 +513,10 @@ export default class Store {
   }
 
   parseScannerData = (data) => {
+    let value;
     if (data.includes('|')) {
       const barcode = data.split('|');
-      const value = barcode[0];
+      value = barcode[0];
       this.filters = [];
       this.filters.push(
         { 
@@ -520,11 +524,18 @@ export default class Store {
           value
         }
       );
-      this.scannerData.clear();
+    } else if (data.length < 20) {
+      this.filters = [];
+      this.filters.push(
+        { 
+          columnName: 'confirmation',
+          value: data.replace(/[\n\r]+/g, ''),
+        }
+      );
     } else {
       const barcode = dlParser(data);
       console.log(barcode);
-      if (this.registrant) {
+      if (this.registrant && barcode) {
         this.registrant.firstname = titleCase(barcode.name().first);
         this.registrant.lastname = titleCase(barcode.name().last);
         this.registrant.address = titleCase(barcode.address);
@@ -534,6 +545,7 @@ export default class Store {
         this.registrant.zip = barcode.postal_code;
       }
     }
+    this.scannerData.clear();
   }
 
   handleFcmMessage = (msg) => {
@@ -850,6 +862,20 @@ export default class Store {
   @action updateRegistrant = (field, value) => {
     this.registrant[field] = value;
     return this.registrant;
+  }
+
+  @action resetPayment = () => {
+    this.creditCard = {
+      cardNumber: '',
+      name: '',
+      expirationDate: '',
+      security: '',
+      trackOne: null,
+      trackTwo: null,
+    };
+    this.check = {
+      number: '',
+    };
   }
 
   @action saveNewRegistrant = async () => {

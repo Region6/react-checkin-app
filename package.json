@@ -33,7 +33,7 @@
   },
   "browserslist": "electron 1.6",
   "build": {
-    "productName": "CheckIn",
+    "productName": "checkin-app",
     "appId": "xyz.vosswerks.checkin",
     "files": [
       "dist/",

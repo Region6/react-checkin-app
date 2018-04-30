@@ -131,7 +131,7 @@ const getPdf417Parsed = (data, separator) => {
   });
 
   // version 3 putting middle and first names in the same field
-  if (parsedData.hasOwnProperty('DCT')) {
+  if (parsedData.hasOwnProperty('DCT') && parsedData.DCT.length) {
     if (parsedData.DCT.includes(',')) {
       name = parsedData.DCT.split(',');
     } else {
