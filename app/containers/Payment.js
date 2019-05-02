@@ -28,7 +28,6 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import MaskedInput from 'react-text-mask';
 import NumberFormat from 'react-number-format';
-import Cards from 'react-credit-cards';
 import CreditCardInput from 'react-credit-card-input';
 
 import { navigate } from '../components/routerHistory';
