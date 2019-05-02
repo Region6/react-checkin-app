@@ -17,6 +17,11 @@ matrix:
       env:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+      before_install:
+        - sudo apt-get install -y libudev-dev
+      addons:
+        apt:
+          update: true
 
     - os: windows
       language: node_js
@@ -39,8 +44,11 @@ env:
     - WINEDLLOVERRIDES="mscoree,mshtml="
     - WINEDEBUG="-all"
 
-before_install:
-  - sudo apt-get install -y libudev-dev
-addons:
-  apt:
-    update: true
+install:
+  - yarn --ignore-engines
+
+script:
+  # HACK: Temporarily ignore `yarn test` on linux
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then yarn test; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linx" ]]; then yarn test; fi
+  - if [[ "$TRAVIS_OS_NAME" == "win" ]]; then yarn test; fi
