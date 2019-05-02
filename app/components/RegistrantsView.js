@@ -23,24 +23,6 @@ import Check from "@material-ui/icons/Check";
 import FilterList from "@material-ui/icons/FilterList";
 import Remove from "@material-ui/icons/Remove";
 import Clear from "@material-ui/icons/Clear";
-import {
-  DataTypeProvider,
-  FilteringState,
-  IntegratedFiltering,
-  RowDetailState,
-  PagingState,
-  SortingState,
-  IntegratedPaging,
-} from '@devexpress/dx-react-grid';
-import {
-  Grid,
-  Table,
-  TableHeaderRow,
-  TableFilterRow,
-  TableRowDetail,
-  VirtualTable,
-  PagingPanel,
-} from '@devexpress/dx-react-grid-material-ui';
 import MaterialTable from 'material-table'
 
 import RowDetail from './RowDetail';
