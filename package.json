@@ -29,7 +29,8 @@
     "rebuild": "electron-rebuild",
     "start": "cross-env NODE_ENV=production electron ./app/main.prod.js",
     "start-main-dev": "cross-env HOT=1 NODE_ENV=development electron --inspect=5858 -r @babel/register ./app/main.dev.js",
-    "start-renderer-dev": "cross-env NODE_ENV=development webpack-dev-server --config configs/webpack.config.renderer.dev.babel.js"
+    "start-renderer-dev": "cross-env NODE_ENV=development webpack-dev-server --config configs/webpack.config.renderer.dev.babel.js",
+    "release": "build"
   },
   "lint-staged": {
     "*.{js,jsx}": [

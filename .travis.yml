@@ -18,7 +18,7 @@ matrix:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
       before_install:
-        - sudo apt-get install -y libudev-dev
+        - sudo apt-get install -y libudev-dev rpm
       addons:
         apt:
           update: true
@@ -52,3 +52,4 @@ install:
 script:
   - echo "skipping tests"
   - yarn package
+  - yarn release
