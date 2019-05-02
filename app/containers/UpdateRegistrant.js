@@ -2,24 +2,33 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import { withStyles } from 'material-ui/styles';
-import Typography from 'material-ui/Typography';
-import Grid from 'material-ui/Grid';
-import Card, { CardActions, CardContent, CardMedia } from 'material-ui/Card';
-import Divider from 'material-ui/Divider';
-import { MenuItem } from 'material-ui/Menu';
-import Select from 'material-ui/Select';
-import Input, { InputLabel } from 'material-ui/Input';
-import { FormControl, FormHelperText, FormControlLabel, FormGroup } from 'material-ui/Form';
-import Button from 'material-ui/Button';
-import ButtonBase from 'material-ui/ButtonBase';
-import TextField from 'material-ui/TextField';
-import Switch from 'material-ui/Switch';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Divider from '@material-ui/core/Divider';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import Input from '@material-ui/core/Input';
+import InputLabel  from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
+import Button from '@material-ui/core/Button';
+import ButtonBase from '@material-ui/core/ButtonBase';
+import TextField from '@material-ui/core/TextField';
+import Switch from '@material-ui/core/Switch';
 import MaskedInput from 'react-text-mask';
-import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import Paper from 'material-ui/Paper';
+import Paper from '@material-ui/core/Paper';
+
+import { navigate } from '../components/routerHistory';
+import AutoSuggest from '../components/AutoSuggest';
 
 const styles = theme => ({
   card: {
@@ -43,6 +52,10 @@ const styles = theme => ({
     marginLeft: theme.spacing.unit,
     marginRight: theme.spacing.unit,
     width: 200,
+  },
+  fullWidth: {
+    marginLeft: theme.spacing.unit,
+    marginRight: theme.spacing.unit,
   },
   selectFormControl: {
     margin: theme.spacing.unit,
@@ -83,7 +96,9 @@ const TextMaskCustom = (props) => {
   return (
     <MaskedInput
       {...other}
-      ref={inputRef}
+      ref={ref => {
+        inputRef(ref ? ref.inputElement : null);
+      }}
       mask={['(', /[1-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]}
       placeholderChar={'\u2000'}
       showMask
@@ -145,19 +160,6 @@ const renderSuggestionsContainer = (options) => {
 @inject('store')
 @observer
 class UpdateRegistrant  extends Component {
-  componentDidMount() {
-    const { classes, store, match, history } = this.props;
-    console.log(match);
-    store.siteIdQuery = '';
-    store.userIdQuery = '';
-    if (match.params.id) {
-      store.setRegistrant(match.params.id);
-    } else {
-      store.createNewRegistrant();
-    }
-    console.log(store.browserHistory);
-  }
-
   getSuggestions = (inputValue) => {
     const { store } = this.props;
     console.log('getSuggestions', inputValue);
@@ -222,10 +224,10 @@ class UpdateRegistrant  extends Component {
   }
 
   render() {
-    const { classes, store, match, history } = this.props;
+    const { classes, store } = this.props;
     const { registrant, updateRegistrant } = store;
 
-    const goBack = () => history.push('/dashboard');
+    const goBack = () => navigate('/dashboard');
     const save = async () => {
       let result;
       if (registrant.id) {
@@ -237,7 +239,7 @@ class UpdateRegistrant  extends Component {
             columnName: 'displayId',
             value: result.data.registrantId,
           }]);
-          history.push('/dashboard');
+          navigate('/dashboard');
         }
       }
     }
@@ -262,10 +264,36 @@ class UpdateRegistrant  extends Component {
       store.siteIdQuery = newValue;
     };
 
-    const handleUserIdChange = (event, { newValue, method }) => {
-      console.log('handleSiteIdChange', newValue);
-      //updateRegistrant('siteId', newValue);
-      store.userIdQuery = newValue;
+    const handleUserIdChange = (data, event) => {
+      console.log('handleSiteIdChange', data);
+      if (!data) {
+        store.registrant.userId = '';
+        store.registrant.address = '';
+        store.registrant.address2 = '';
+        store.registrant.city = '';
+        store.registrant.state = '';
+        store.registrant.zip = '';
+        store.registrant.organization = '';
+        store.registrant.siteId = '';
+      } else if (data.type === 'exhibitor') {
+        store.registrant.userId = data.info.id;
+        store.registrant.address = data.info.address;
+        store.registrant.address2 = data.info.address2;
+        store.registrant.city = data.info.city;
+        store.registrant.organization = data.info.organization;
+        const state = store.getCountryState('US', data.info.state);
+        store.registrant.state = (state) ? state.name : '';
+        store.registrant.zip = data.info.zip;
+      } else {
+        store.registrant.siteId = data.info.siteId;
+        store.registrant.address = data.info.street1;
+        store.registrant.address2 = data.info.street2;
+        store.registrant.organization = data.info.company;
+        store.registrant.city = data.info.city;
+        const state = store.getCountryState('US', data.info.state);
+        store.registrant.state = (state) ? state.name : '';
+        store.registrant.zip = data.info.zipCode;
+      }
     };
 
     const clearSiteId = () => {
@@ -281,9 +309,9 @@ class UpdateRegistrant  extends Component {
                 className={classes.breadCrumbs}
                 onClick={goBack}
               >
-                Dashboard > 
+                Dashboard >
               </ButtonBase>
-              <Typography variant="headline">
+              <Typography variant="h5">
                 Update Registrant
               </Typography>
             </CardContent>
@@ -323,30 +351,14 @@ class UpdateRegistrant  extends Component {
                       label="OSHA"
                     />
                   </FormGroup>
-                  {registrant.exhibitor ? 
-                    <FormControl fullWidth>
-                      <Autosuggest
-                        theme={{
-                          container: classes.suggestionsContainer,
-                          suggestionsContainerOpen: classes.suggestionsContainerOpen,
-                          suggestionsList: classes.suggestionsList,
-                          suggestion: classes.suggestion,
-                        }}
-                        renderInputComponent={renderInput}
-                        suggestions={toJS(store.userIdsFiltered)}
-                        onSuggestionsFetchRequested={this.handleUserIdFetchRequested}
-                        onSuggestionsClearRequested={this.handleUserIdClearRequested}
-                        onSuggestionSelected={this.handleUserIdSelected}
-                        renderSuggestionsContainer={renderSuggestionsContainer}
-                        getSuggestionValue={this.getUserId}
-                        renderSuggestion={renderUserId}
-                        inputProps={{
-                          classes,
-                          shrink: true,
-                          placeholder: 'Search for an Exhibitor',
-                          value: store.getUserIdCompanyName(registrant.userId),
-                          onChange: handleUserIdChange,
-                        }}
+                  {registrant.exhibitor ?
+                    <FormControl fullWidth className={classes.fullWidth}>
+                      <AutoSuggest
+                        async
+                        value={store.getUserIdCompanyName(registrant.userId)}
+                        asyncOptions={store.getExhibitorOptions}
+                        placeholder='Search for an Exhibitor'
+                        onChange={handleUserIdChange}
                       />
                     </FormControl>
                     : null
@@ -406,34 +418,14 @@ class UpdateRegistrant  extends Component {
                     margin="normal"
                     fullWidth
                   />
-                  <FormControl fullWidth>
-                    <Autosuggest
-                      theme={{
-                        container: classes.suggestionsContainer,
-                        suggestionsContainerOpen: classes.suggestionsContainerOpen,
-                        suggestionsList: classes.suggestionsList,
-                        suggestion: classes.suggestion,
-                      }}
-                      renderInputComponent={renderInput}
-                      suggestions={toJS(store.siteIdsFiltered)}
-                      onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
-                      onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
-                      onSuggestionSelected={this.handleSuggestionSelected}
-                      renderSuggestionsContainer={renderSuggestionsContainer}
-                      getSuggestionValue={this.getSuggestions}
-                      renderSuggestion={renderSuggestion}
-                      inputProps={{
-                        classes,
-                        placeholder: 'Search for a Site Id',
-                        value: store.getSiteIdCompanyName(registrant.siteId),
-                        onChange: handleSiteIdChange,
-                      }}
+                  <FormControl fullWidth className={classes.fullWidth}>
+                    <AutoSuggest
+                      async
+                      value={store.getSiteIdCompanyName(registrant.siteId)}
+                      asyncOptions={store.getSiteIdOptions}
+                      placeholder='Search for a Site Id'
+                      onChange={handleUserIdChange}
                     />
-                    <Button
-                      onClick={clearSiteId}
-                      color="primary">
-                      Clear
-                    </Button>
                   </FormControl>
                   <TextField
                     label="Street Address 1"

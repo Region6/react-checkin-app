@@ -2,7 +2,7 @@ import { observable, toJS } from 'mobx';
 import { createTransformer } from 'mobx-utils';
 import flow from 'lodash.flow';
 import concat from 'lodash.concat';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import Registrant from './Tables';
 
 const serialize = createTransformer(row => ({ ...row }));

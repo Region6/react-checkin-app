@@ -2,21 +2,29 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import { withStyles } from 'material-ui/styles';
-import ButtonBase from 'material-ui/ButtonBase';
-import Button from 'material-ui/Button';
-import Grid from 'material-ui/Grid';
-import Card, { CardActions, CardContent, CardMedia } from 'material-ui/Card';
-import Divider from 'material-ui/Divider';
-import Icon from 'material-ui/Icon';
-import IconButton from 'material-ui/IconButton';
+import { withStyles } from '@material-ui/core/styles';
+import ButtonBase from '@material-ui/core/ButtonBase';
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Divider from '@material-ui/core/Divider';
+import Icon from '@material-ui/core/Icon';
+import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import PrintIcon from '@material-ui/icons/Print';
-import Typography from 'material-ui/Typography';
-import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
-import { withRouter } from 'react-router';
+import Typography from '@material-ui/core/Typography';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+
+import { navigate } from './routerHistory';
 
 const styles = theme => ({
   card: {
@@ -36,6 +44,9 @@ const styles = theme => ({
       backgroundColor: theme.palette.background.default,
     },
   },
+  detail: {
+    margin: theme.spacing.unit,
+  }
 });
 
 const CustomTableCell = withStyles(theme => ({
@@ -48,53 +59,62 @@ const CustomTableCell = withStyles(theme => ({
   },
 }))(TableCell);
 
-const RowDetail = inject('store')(observer(({ classes, store, row, history }) => {
-  const printBadge = async () => store.printBadge(row);
-  const printReceipt = () => store.printReceipt(row);
+const RowDetail = inject('store')(observer(({ classes, store, rowData }) => {
+  const printBadge = async () => store.printBadge(rowData);
+  const printReceipt = () => store.printReceipt(rowData);
   const showReceipt = () => {
     let modal = window.open('', 'view');
-    modal.document.write(store.renderReceipt(row));
+    const html = store.renderReceipt(rowData);
+    setTimeout(() => {
+      modal.document.write(html);
+      },
+      500
+    );
   }
   const showBadge = async () => {
     let modal = window.open('', 'view');
-    const badge = await store.renderBadge(row);
-    modal.document.write(badge);
+    const badge = await store.renderBadge(rowData);
+    setTimeout(() => {
+        modal.document.write(badge);
+      },
+      500
+    );
   }
-  const editRegistrant = () => history.push(`/registrant/${row.paddedRegId}`);
-  const payment = () => history.push(`/registrant/${row.paddedRegId}/payment`);
+  const editRegistrant = () => navigate(`/registrant/${rowData.paddedRegId}`);
+  const payment = () => navigate(`/registrant/${rowData.paddedRegId}/payment`);
   const goToRegistrant = (regId) => (e) => {
     store.filters = [];
     store.filters.push(
-      { 
+      {
         columnName: 'displayId',
         value: regId,
       }
     );
   }
   return (
-    <Grid container spacing={24}>
+    <Grid container spacing={8}>
       <Grid item xs={12} md={4}>
         <Card className={classes.card}>
           <CardContent>
-            <Typography variant="title">
+            <Typography variant="h6">
               Contact Info
             </Typography>
           </CardContent>
           <Divider />
           <CardContent>
-            <Typography variant="body1">{row.title}</Typography>
-            <Typography variant="body1">{row.address}</Typography>
-            <Typography variant="body1">{row.address2}</Typography>
-            <Typography variant="body1">{row.city}, {row.state} {row.zipcode}</Typography>
-            <Typography variant="body1">{row.phone}</Typography>
-            <Typography variant="body1">{row.email}</Typography>
+            <Typography variant="body2">{rowData.title}</Typography>
+            <Typography variant="body2">{rowData.address}</Typography>
+            <Typography variant="body2">{rowData.address2}</Typography>
+            <Typography variant="body2">{rowData.city}, {rowData.state} {rowData.zipcode}</Typography>
+            <Typography variant="body2">{rowData.phone}</Typography>
+            <Typography variant="body2">{rowData.email}</Typography>
           </CardContent>
         </Card>
       </Grid>
       <Grid item xs={12} md={8}>
         <Card className={classes.card}>
           <CardContent>
-            <Typography variant="title">
+            <Typography variant="h6">
               Linked People
             </Typography>
           </CardContent>
@@ -102,7 +122,7 @@ const RowDetail = inject('store')(observer(({ classes, store, row, history }) =>
           <CardContent>
             <Table className={classes.table}>
               <TableBody>
-                {row.linked.map(p => (
+                {rowData.linked.map(p => (
                   <TableRow
                     hover
                     className={classes.row}
@@ -127,14 +147,14 @@ const RowDetail = inject('store')(observer(({ classes, store, row, history }) =>
                       {p.attend ?
                         <IconButton
                           aria-label="Checked In"
-                          onClick={(...args) => store.checkInRegistrant(p.registrantId, false, row.registrantId)}
+                          onClick={(...args) => store.checkInRegistrant(p.registrantId, false, rowData.registrantId)}
                         >
                           <CheckCircleIcon />
                         </IconButton>
                         :
                         <IconButton
                           aria-label="Not Checked In"
-                          onClick={(...args) => store.checkInRegistrant(p.registrantId, true, row.registrantId)}
+                          onClick={(...args) => store.checkInRegistrant(p.registrantId, true, rowData.registrantId)}
                         >
                           <RemoveCircleIcon />
                         </IconButton>
@@ -155,42 +175,42 @@ const RowDetail = inject('store')(observer(({ classes, store, row, history }) =>
       </Grid>
       <Grid item xs={12} md={12}>
         <Button
-          variant="raised"
+          variant="contained"
           className={classes.button}
           onClick={editRegistrant}
         >
           Edit Registrant
         </Button>
         <Button
-          variant="raised"
+          variant="contained"
           className={classes.button}
           onClick={payment}
         >
           Make Payment
         </Button>
         <Button
-          variant="raised"
+          variant="contained"
           className={classes.button}
           onClick={printBadge}
         >
           Print Badge
         </Button>
         <Button
-          variant="raised"
+          variant="contained"
           className={classes.button}
           onClick={showBadge}
         >
           View Badge
         </Button>
         <Button
-          variant="raised"
+          variant="contained"
           className={classes.button}
           onClick={printReceipt}
         >
           Print Receipt
         </Button>
         <Button
-          variant="raised"
+          variant="contained"
           className={classes.button}
           onClick={showReceipt}
         >
@@ -205,4 +225,4 @@ RowDetail.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withRouter(withStyles(styles)(RowDetail));
+export default withStyles(styles)(RowDetail);

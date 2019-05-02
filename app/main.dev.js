@@ -13,9 +13,13 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import fs from 'fs';
 import { setup as setupPushReceiver } from 'electron-push-receiver';
-import { autoUpdater } from "electron-updater"
+import { autoUpdater } from "electron-updater";
 
 import MenuBuilder from './menu';
+
+const debug = require('electron-debug');
+debug();
+
 let mainWindow = null;
 
 if (process.env.NODE_ENV === 'production') {
@@ -24,7 +28,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
-  require('electron-debug')();
   const path = require('path');
   const p = path.join(__dirname, '..', 'app', 'node_modules');
   require('module').globalPaths.push(p);
@@ -55,18 +58,28 @@ const print = (src, printer) => {
   win.loadURL(`data:text/html;charset=utf-8,${src}`);
  // if pdf is loaded start printing.
   win.webContents.on('did-finish-load', () => {
-    /*
+
     win.show();
     win.focus();
     win.openDevTools();
-    */
 
-    win.webContents.print({
-      silent: true,
-      deviceName: printer,
-      printBackground: true,
-    });
-    win = null;
+    console.log('sending to printer', printer);
+    setTimeout(
+      () => {
+        win.webContents.print(
+          {
+            silent: true,
+            deviceName: printer,
+            printBackground: true,
+          },
+          (success) => {
+            console.log('Print job was', success);
+            win = null;
+          },
+        );
+      },
+      500
+    );
     // close window after print order.
   });
 }
@@ -98,6 +111,7 @@ app.on('ready', async () => {
     webPreferences: {
       nativeWindowOpen: true,
       plugins: true,
+      nodeIntegration: true,
     },
   });
 
@@ -126,7 +140,7 @@ app.on('ready', async () => {
     if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
       mainWindow.openDevTools();
     }
-    
+
   });
 
   mainWindow.on('closed', () => {
@@ -136,7 +150,7 @@ app.on('ready', async () => {
   mainWindow.on('before-quit', () => {
     mainWindow.webContents.send('quit', {quit: true})
   });
-  
+
 
   mainWindow.webContents.on(
     'new-window',
@@ -153,6 +167,7 @@ app.on('ready', async () => {
             height: 500,
             webPreferences: {
               plugins: true,
+              nodeIntegration: false,
             },
           },
         );

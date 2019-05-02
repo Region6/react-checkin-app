@@ -2,16 +2,27 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import { withStyles } from 'material-ui/styles';
-import Paper from 'material-ui/Paper';
-import Icon from 'material-ui/Icon';
-import IconButton from 'material-ui/IconButton';
+import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import Icon from '@material-ui/core/Icon';
+import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
 import PrintIcon from '@material-ui/icons/Print';
-import Typography from 'material-ui/Typography';
+import Typography from '@material-ui/core/Typography';;
+import Search from "@material-ui/icons/Search";
+import ViewColumn from "@material-ui/icons/ViewColumn";
+import SaveAlt from "@material-ui/icons/SaveAlt";
+import ChevronLeft from "@material-ui/icons/ChevronLeft";
+import ChevronRight from "@material-ui/icons/ChevronRight";
+import FirstPage from "@material-ui/icons/FirstPage";
+import LastPage from "@material-ui/icons/LastPage";
+import Check from "@material-ui/icons/Check";
+import FilterList from "@material-ui/icons/FilterList";
+import Remove from "@material-ui/icons/Remove";
+import Clear from "@material-ui/icons/Clear";
 import {
   DataTypeProvider,
   FilteringState,
@@ -30,6 +41,7 @@ import {
   VirtualTable,
   PagingPanel,
 } from '@devexpress/dx-react-grid-material-ui';
+import MaterialTable from 'material-table'
 
 import RowDetail from './RowDetail';
 
@@ -45,6 +57,12 @@ const styles = theme => ({
   input: {
     display: 'none',
   },
+  table: {
+    maxWidth: '100%',
+  },
+  detail: {
+    margin: theme.spacing.unit,
+  }
 });
 
 const rowStyles = {
@@ -69,79 +87,53 @@ const RegistrantsView = inject('store')(observer(({ classes, store }) => {
   checkIn = store.checkInRegistrant;
   const columns = [
     {
-      name: 'icons',
-      getCellValue: row => (row),
+      field: 'displayId',
+      title: 'Registrant ID',
+      customFilterAndSearch: (term, rowData) => store.updateFilters({term: term})
     },
     {
-      name: 'displayId',
-      title: 'Registrant ID'
-    },
-    {
-      name: 'confirmation',
+      field: 'confirmation',
       title: 'Confirmation'
     },
     {
-      name: 'groupConfirm',
+      field: 'groupConfirm',
       title: 'Group #'
     },
     {
-      name: 'lastname',
+      field: 'lastname',
       title: 'Last Name'
     },
     {
-      name: 'firstname',
+      field: 'firstname',
       title: 'First Name'
     },
     {
-      name: 'organization',
+      field: 'organization',
       title: 'Company'
     },
+  ];
+  const actions = [
+    rowData => ({
+      icon: rowData => rowData.attend ? <CheckCircleIcon /> : <RemoveCircleIcon />,
+      tooltip: rowData => rowData.attend ? "Checked In" : "Not Checked In",
+      onClick: (event, rowData) => checkIn(rowData.paddedRegId, (rowData.attend ? false : true)),
+    }),
+    rowData => ({
+      icon: rowData => rowData.transactions && rowData.transactions.length > 0 ? <MonetizationOnIcon /> : null,
+      tooltip: rowData => rowData.transactions && rowData.transactions.length > 0 ? "Paid" : "Not Paid",
+    }),
+    rowData => ({
+      icon: () => <PrintIcon />,
+      tooltip: 'Print Badge',
+      onClick: (event, rowData) => printBadge(rowData),
+    })
   ];
   const iconColumns = ['icons'];
   const filteringStateColumnExtensions = [
     { columnName: 'icons', filteringEnabled: false },
   ];
 
-  const IconFormatter = ({ value }) => (
-    <React.Fragment>
-      {value.attend ?
-        <IconButton
-          aria-label="Checked In"
-          onClick={(...args) => checkIn(value.paddedRegId, false)}
-        >
-          <CheckCircleIcon />
-        </IconButton>
-        :
-        <IconButton
-          aria-label="Not Checked In"
-          onClick={(...args) => checkIn(value.paddedRegId, true)}
-        >
-          <RemoveCircleIcon />
-        </IconButton>
-      }
-      {value.transactions.length > 0 ?
-        <IconButton
-          aria-label="Paid"
-        >
-          <MonetizationOnIcon />
-        </IconButton> : null
-      }
-      <IconButton
-        aria-label="Print Badge"
-        onClick={(...args) =>printBadge(value)}
-      >
-        <PrintIcon />
-      </IconButton>
-    </React.Fragment>
-  );
-  
-  const IconTypeProvider = props => (
-    <DataTypeProvider
-      formatterComponent={IconFormatter}
-      {...props}
-    />
-  );
-  
+
   const changeCurrentPage = currentPage => store.page.current = currentPage;
   const changePageSize = pageSize => store.page.size = pageSize;
   const changeExpandedDetails = expandedRowIds => store.updateExpandedRows(expandedRowIds);
@@ -159,43 +151,38 @@ const RegistrantsView = inject('store')(observer(({ classes, store }) => {
 
   return (
     <Paper>
-      <Grid
-        rows={store.db.getData('registrants')}
-        columns={columns}
-        getRowId={getRowId}
-      >
-        <FilteringState
-          onFiltersChange={changeFilters}
-          columnExtensions={filteringStateColumnExtensions}
+      <div>
+        <MaterialTable
+          icons={{
+            Check: () => <Check />,
+            Export: () => <SaveAlt />,
+            Filter: () => <FilterList />,
+            FirstPage: () => <FirstPage />,
+            LastPage: () => <LastPage />,
+            NextPage: () => <ChevronRight />,
+            PreviousPage: () => <ChevronLeft />,
+            Search: () => <Search />,
+            ThirdStateCheck: () => <Remove />,
+            ViewColumn: () => <ViewColumn />,
+            DetailPanel: () => <ChevronRight />,
+            ResetSearch: () => <Clear />,
+          }}
+          columns={columns}
+          data={store.db.getData('registrants')}
+          actions={actions}
+          detailPanel={rowData => <div className={classes.detail}><RowDetail rowData={rowData}/></div>}
+          options={{
+            toolbar: false,
+            search: false,
+            rowStyle: rowData => ({
+              cursor: 'pointer',
+              backgroundColor: (rowData.attend) ? '#A5D6A7' : null,
+            }),
+            onChangeRowsPerPage: pageSize => console.log(pageSize),
+          }}
+          title="Registrants"
         />
-        <IconTypeProvider
-            for={iconColumns}
-          />
-        <RowDetailState
-          expandedRowIds={toJS(store.expandedRows)}
-          onExpandedRowIdsChange={changeExpandedDetails}
-        />
-        <PagingState
-          currentPage={toJS(store.page.current)}
-          onCurrentPageChange={changeCurrentPage}
-          pageSize={toJS(store.page.size)}
-          onPageSizeChange={changePageSize}
-        />
-        <SortingState
-          sorting={toJS(store.sorting)}
-          onSortingChange={changeSorting}
-        />
-        <IntegratedPaging />
-        <Table rowComponent={TableRow} />
-        <TableHeaderRow showSortingControls />
-        <TableFilterRow />
-        <TableRowDetail
-          contentComponent={RowDetail}
-        />
-        <PagingPanel
-          pageSizes={toJS(store.page.sizes)}
-        />
-      </Grid>
+      </div>
     </Paper>
   );
 }));

@@ -1,4 +1,4 @@
-import { remote } from 'electron'; 
+import { remote } from 'electron';
 import path from 'path';
 import { observable, autorun, action, computed, toJS } from 'mobx';
 import { createViewModel } from 'mobx-utils';
@@ -51,7 +51,7 @@ Handlebars.registerHelper ('truncate', function (str, len) {
       new_str = str.substr (0, len);
     }
 
-    return new Handlebars.SafeString (new_str +'...'); 
+    return new Handlebars.SafeString (new_str +'...');
   }
   return str;
 });
@@ -84,7 +84,7 @@ Handlebars.registerHelper({
 
 
 const app = remote.app;
-const rootFolder = process.env.NODE_ENV === 'development' 
+const rootFolder = process.env.NODE_ENV === 'development'
   ? `${process.cwd()}/app`
   : `${path.resolve(app.getAppPath(), '../../')}/resources/app.asar`;
 const Readline = SerialPort.parsers.Readline;
@@ -141,6 +141,7 @@ export default class Store {
     exhibitors: 0,
     general: 0,
   };
+  @observable searchValue = '';
   @observable ports = [];
   @observable filters = [];
   @observable sorting = [];
@@ -222,6 +223,7 @@ export default class Store {
       }
     });
 
+    /*
     const disposer = autorun(
       () => {
         console.log(this.filters);
@@ -231,13 +233,14 @@ export default class Store {
       },
       { delay: 900 }
     );
+    */
 
     const disposerSorting = autorun(
       () => {
         console.log(this.sorting);
         if (this.sorting.length > 0) {
           this.filterRegistrants();
-        } 
+        }
       },
       { delay: 10 }
     );
@@ -333,7 +336,7 @@ export default class Store {
       usbDetect.on(
         'add',
         (device) => {
-          console.log('add', device); 
+          console.log('add', device);
           setTimeout(() => {
             self.setupMagSwipe();
           }, 2000);
@@ -342,11 +345,11 @@ export default class Store {
       usbDetect.on(
         'remove',
         (device) => {
-          console.log('remove', device); 
+          console.log('remove', device);
           self.swipe.close();
         }
       );
-      await this.setupFCM();
+      // await this.setupFCM();
     } catch(e) {
       console.log(e);
     }
@@ -420,7 +423,7 @@ export default class Store {
         console.log('Data:', data.toString('utf8'));
         self.scannerData.push(data.toString('utf8'));
       });
-      
+
     } catch (e) {
       console.log(e);
       this.scanner = null;
@@ -455,10 +458,10 @@ export default class Store {
         let myNotification = new Notification(msg.notification.title, {
           body: msg.notification.body
         });
-        
+
         myNotification.onclick = () => {
           console.log('Notification clicked');
-        }  
+        }
       } else {
         self.handleFcmMessage(msg.data);
       }
@@ -519,7 +522,7 @@ export default class Store {
       value = barcode[0];
       this.filters = [];
       this.filters.push(
-        { 
+        {
           columnName: 'displayId',
           value
         }
@@ -527,7 +530,7 @@ export default class Store {
     } else if (data.length < 20) {
       this.filters = [];
       this.filters.push(
-        { 
+        {
           columnName: 'confirmation',
           value: data.replace(/[\n\r]+/g, ''),
         }
@@ -541,7 +544,7 @@ export default class Store {
         this.registrant.address = titleCase(barcode.address);
         this.registrant.city = titleCase(barcode.city);
         const state = this.getCountryState('US', barcode.state);
-        this.registrant.state = (state) ? state.name : ''; 
+        this.registrant.state = (state) ? state.name : '';
         this.registrant.zip = barcode.postal_code;
       }
     }
@@ -560,7 +563,9 @@ export default class Store {
   }
 
   getTemplate = (id) => {
-    return this.templates.find(t => t.id === id);
+    let retVal;
+    retVal = this.templates.find(t => t.id === id);
+    return retVal;
   }
 
   setBrowserHistory = (browserHistory) => {
@@ -679,8 +684,8 @@ export default class Store {
   @action async filterRegistrants(exhibitorsOnly) {
     this.loading = true;
     const record = {
-      filters: this.filters,
-      sorting: this.sorting,
+      filters: toJS(this.filters),
+      sorting: toJS(this.sorting),
       exhibitors: (exhibitorsOnly) ? 1 : 0,
       page: this.paging.page,
       limit: this.paging.limit,
@@ -745,7 +750,12 @@ export default class Store {
 
   @action getSiteIds = async () => {
     const records = await this.request.get('/siteIds');
-    this.siteIds = records.data;
+    this.siteIds = records.data.map(site => ({
+      label: `${site.company} [${site.siteId}] - ${site.street1} ${site.city}, ${site.state}`,
+      value: site.siteId,
+      type: 'siteId',
+      info: site,
+    }));
     return this.siteIds;
   }
 
@@ -784,7 +794,7 @@ export default class Store {
     const bh = 0.75;
     let rect = 32000;
     let blocks = [];
-  
+
     const badgeStr = await mapSeries(
       barcode.bcode,
       async (row) => {
@@ -802,9 +812,9 @@ export default class Store {
           }
         );
         return colStr.join("");
-      } 
+      }
     );
-  
+
     registrant.barcode = `<g id="barcode" style="fill:#000000;stroke:none" x="23.543152" y="295" transform="translate(64,320)">${badgeStr.join('')}</g>`;
     return registrant;
   };
@@ -823,7 +833,7 @@ export default class Store {
       dirname,
       registrants,
     });
-  } 
+  }
 
   @action printBadge = async (registrant) => {
     const print = async (reg) => {
@@ -837,7 +847,7 @@ export default class Store {
           printer: selected.printer.name,
         }
       );
-      
+
     }
     this.proposal = null;
     const selected = this.getSelectedPrinter('badge');
@@ -909,11 +919,12 @@ export default class Store {
   renderReceipt = (registrant) => {
     const dirname = (print) ? `file://${rootFolder}/` : '';
     const template = this.getTemplate('receipt');
-    return template.src({
+    const html = template.src({
       dirname,
       registrant: registrant,
     });
-  } 
+    return html;
+  }
 
   printReceipt = (registrant) => {
     const src = this.renderReceipt(registrant);
@@ -931,9 +942,9 @@ export default class Store {
 
   getSiteIdCompanyName = (siteId) => {
     let retVal = siteId ? siteId : this.siteIdQuery ? this.siteIdQuery : '';
-    const site = this.siteIds.find(r => r.siteId === siteId);
+    const site = this.siteIds.find(r => r.value === siteId);
     if (site) {
-      retVal = `${site.company} [${site.siteId}] - ${site.street1} ${site.city}, ${site.state}`;
+      retVal = `${site.info.company} [${site.info.siteId}] - ${site.info.street1} ${site.info.city}, ${site.info.state}`;
     }
     return retVal;
   }
@@ -1090,6 +1101,46 @@ export default class Store {
     });
     const registrants = await this.filterRegistrants(true);
     return registrants;
+  }
+
+  getExhibitorOptions = async (search) => {
+    let retVal = [];
+    const data = await this.request.get(
+      '/exhibitors/companies',
+      {
+        params: {
+          search,
+        },
+      },
+    );
+
+    retVal = data.data.map(d => ({
+      value: d.id,
+      label: `${d.organization} - ${d.city}, ${d.state}`,
+      type: 'exhibitor',
+      info: d,
+    }));
+    return retVal;
+  }
+
+  getSiteIdOptions = async (search) => {
+    let retVal = [];
+    const data = await this.request.get(
+      '/siteid',
+      {
+        params: {
+          search,
+        },
+      },
+    );
+
+    retVal = data.data.map(site => ({
+      label: `${site.company} [${site.siteId}] - ${site.street1} ${site.city}, ${site.state}`,
+      value: site.siteId,
+      type: 'siteId',
+      info: site,
+    }));
+    return retVal;
   }
 
   @action getAttendeeCount = async (exhibitors) => {

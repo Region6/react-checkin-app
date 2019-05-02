@@ -2,26 +2,37 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import { withStyles } from 'material-ui/styles';
-import Typography from 'material-ui/Typography';
-import Grid from 'material-ui/Grid';
-import Card, { CardActions, CardContent, CardMedia } from 'material-ui/Card';
-import Divider from 'material-ui/Divider';
-import { MenuItem } from 'material-ui/Menu';
-import Select from 'material-ui/Select';
-import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
-import { FormControl, FormHelperText, FormControlLabel, FormGroup } from 'material-ui/Form';
-import Button from 'material-ui/Button';
-import ButtonBase from 'material-ui/ButtonBase';
-import TextField from 'material-ui/TextField';
-import Switch from 'material-ui/Switch';
-import Paper from 'material-ui/Paper';
-import Tabs, { Tab } from 'material-ui/Tabs';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Divider from '@material-ui/core/Divider';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
+import Button from '@material-ui/core/Button';
+import ButtonBase from '@material-ui/core/ButtonBase';
+import TextField from '@material-ui/core/TextField';
+import Switch from '@material-ui/core/Switch';
+import Paper from '@material-ui/core/Paper';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import MaskedInput from 'react-text-mask';
 import NumberFormat from 'react-number-format';
 import Cards from 'react-credit-cards';
+import CreditCardInput from 'react-credit-card-input';
 
-import 'react-credit-cards/lib/styles.scss';
+import { navigate } from '../components/routerHistory';
+
 const styles = theme => ({
   card: {
     marginBottom: 10,
@@ -87,7 +98,9 @@ const TextMaskCustom = (props) => {
   return (
     <MaskedInput
       {...other}
-      ref={inputRef}
+      ref={ref => {
+        inputRef(ref ? ref.inputElement : null);
+      }}
       mask={[/[0-9]/, /\d/, '/', /\d/, /\d/]}
       placeholderChar={'\u2000'}
       showMask
@@ -105,7 +118,9 @@ const TextMaskCvc = (props) => {
   return (
     <MaskedInput
       {...other}
-      ref={inputRef}
+      ref={ref => {
+        inputRef(ref ? ref.inputElement : null);
+      }}
       mask={[/[0-9]/, /\d/, /\d/, /\d/]}
       placeholderChar={'\u2000'}
       showMask
@@ -123,7 +138,9 @@ const NumberFormatCustom = (props) => {
   return (
     <NumberFormat
       {...other}
-      ref={inputRef}
+      ref={ref => {
+        inputRef(ref ? ref.inputElement : null);
+      }}
       onValueChange={values => {
         onChange({
           target: {
@@ -164,14 +181,6 @@ class Payment  extends Component {
   @observable amount = '0.00';
   @observable tab = 'credit';
 
-  componentDidMount() {
-    const { classes, store, match, history } = this.props;
-    console.log(match);
-    if (match.params.id) {
-      store.setRegistrant(match.params.id);
-    }
-  }
-
   handleCallback(type, isValid) {
     console.log(type, isValid); //eslint-disable-line no-console
   }
@@ -203,7 +212,7 @@ class Payment  extends Component {
   paymentDisabled = () => {
     const { store } = this.props;
     let disabled = false;
-    /** 
+    /**
     if (this.tab === 'check') {
       disabled = (store.check.number.length < 1 || this.amount === "0.00") ? true : disabled;
     } else {
@@ -215,10 +224,10 @@ class Payment  extends Component {
   }
 
   render() {
-    const { classes, store, match, history } = this.props;
+    const { classes, store } = this.props;
     const { registrant, updateRegistrant } = store;
 
-    const goBack = () => history.push('/dashboard');
+    const goBack = () => navigate('/dashboard');
     const cancel = () => {
       store.clearCreditCard();
       goBack();
@@ -231,7 +240,7 @@ class Payment  extends Component {
           columnName: 'displayId',
           value: result.data.registrantId,
         }]);
-        history.push('/dashboard');
+        navigate('/dashboard');
       }
     }
 
@@ -244,9 +253,9 @@ class Payment  extends Component {
                 className={classes.breadCrumbs}
                 onClick={goBack}
               >
-                Dashboard > 
+                Dashboard >
               </ButtonBase>
-              <Typography variant="headline">
+              <Typography variant="h5">
                 Payment
               </Typography>
             </CardContent>
@@ -261,76 +270,17 @@ class Payment  extends Component {
               <div className={classes.tab}>
                 {this.tab === 'credit' && registrant ?
                   <Grid container spacing={24}>
-                    <Grid item xs={12} md={6}>
-                      <Cards
-                        number={store.creditCard.cardNumber}
-                        name={store.creditCard.name}
-                        expiry={store.creditCard.expirationDate}
-                        cvc={store.creditCard.security}
-                        focused={this.focused}
-                        callback={this.handleCallback}
+                    <Grid item xs={12} md={12}>
+                      <CreditCardInput
+                        cardNumberInputProps={{ value: store.creditCard.cardNumber, onChange: this.handleTextChange('cardNumber', false) }}
+                        cardExpiryInputProps={{ value: store.creditCard.expirationDate, onChange: this.handleTextChange('expirationDate', false) }}
+                        cardCVCInputProps={{ value: store.creditCard.security, onChange: this.handleTextChange('security', false) }}
+                        fieldClassName="input"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <div className={classes.container}>
-                        <TextField
-                          type="tel"
-                          id="number"
-                          label="Credit Card Number"
-                          className={classes.formControl}
-                          value={store.creditCard.cardNumber}
-                          onChange={this.handleTextChange('cardNumber')}
-                          onFocus={this.handleInputFocus}
-                          margin="normal"
-                          fullWidth
-                        />
-                        <TextField
-                          label="Name on Card"
-                          id="name"
-                          className={classes.formControl}
-                          value={store.creditCard.name}
-                          onChange={this.handleTextChange('name')}
-                          onFocus={this.handleInputFocus}
-                          margin="normal"
-                          fullWidth
-                        />
-                        <FormControl>
-                          <TextField
-                            className={classes.formControl}
-                            id="expiry"
-                            label="Expiration Date"
-                            value={store.creditCard.expirationDate}
-                            onChange={this.handleTextChange('expirationDate')}
-                            onFocus={this.handleInputFocus}
-                            InputLabelProps={{
-                              shrink: true,
-                            }}
-                            InputProps={{
-                              inputComponent: TextMaskCustom,
-                            }}
-                          />
-                        </FormControl>
-                        <FormControl>
-                          <TextField
-                            className={classes.formControl}
-                            id="cvc"
-                            label="Security Code"
-                            value={store.creditCard.security}
-                            onChange={this.handleTextChange('security')}
-                            onFocus={this.handleInputFocus}
-                            InputLabelProps={{
-                              shrink: true,
-                            }}
-                            InputProps={{
-                              inputComponent: TextMaskCvc,
-                            }}
 
-                          />
-                        </FormControl>
-                      </div>
-                    </Grid>
                   </Grid>
-                  : 
+                  :
                   <Grid container spacing={24}>
                     <Grid item xs={12} md={12}>
                       <div className={classes.container}>

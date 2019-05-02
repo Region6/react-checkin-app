@@ -4,102 +4,115 @@
 
 import path from 'path';
 import webpack from 'webpack';
-import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import merge from 'webpack-merge';
-import UglifyJSPlugin from 'uglifyjs-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
 import baseConfig from './webpack.config.base';
-import CheckNodeEnv from './internals/scripts/CheckNodeEnv';
+import CheckNodeEnv from '../internals/scripts/CheckNodeEnv';
 
 const appPath = path.resolve('./app');
 CheckNodeEnv('production');
-
 export default merge.smart(baseConfig, {
   devtool: 'source-map',
+
+  mode: 'production',
 
   target: 'electron-renderer',
 
   entry: [
     'babel-polyfill',
-    './app/index',
+    path.join(__dirname, '..', 'app/index'),
   ],
+
   output: {
-    path: path.join(__dirname, 'app/dist'),
+    path: path.join(__dirname, '..', 'app/dist'),
     publicPath: './dist/',
     filename: 'renderer.prod.js'
   },
 
   module: {
     rules: [
-      {
-        test: /\.html$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'html-loader',
-        }
-      },
+      // Extract all .global.css to style.css as is
       {
         test: /\.global\.css$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              publicPath: './'
+            }
           },
           {
             loader: 'css-loader',
             options: {
-              sourceMap: true,
-            },
+              sourceMap: true
+            }
           }
         ]
       },
+      // Pipe other styles through css modules and append to style.css
       {
         test: /^((?!\.global).)*\.css$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: MiniCssExtractPlugin.loader
           },
           {
             loader: 'css-loader',
             options: {
               modules: true,
-              sourceMap: true,
-              importLoaders: 1,
               localIdentName: '[name]__[local]__[hash:base64:5]',
+              sourceMap: true
             }
-          },
+          }
         ]
       },
-      // SASS support - compile all .global.scss files and pipe it to style.css
+      // Add SASS support  - compile all .global.scss files and pipe it to style.css
       {
-        test: /\.global\.scss$/,
+        test: /\.global\.(scss|sass)$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: MiniCssExtractPlugin.loader
           },
           {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-            },
+              importLoaders: 1
+            }
           },
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true
+            }
           }
         ]
       },
-      // SASS support - compile all other .scss files and pipe it to style.css
+      // Add SASS support  - compile all other .scss files and pipe it to style.css
       {
-        test: /^((?!\.global).)*\.scss$/,
+        test: /^((?!\.global).)*\.(scss|sass)$/,
         use: [
           {
-            loader: "style-loader" // creates style nodes from JS strings
+            loader: MiniCssExtractPlugin.loader
           },
           {
-            loader: "css-loader" // translates CSS into CommonJS
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              importLoaders: 1,
+              localIdentName: '[name]__[local]__[hash:base64:5]',
+              sourceMap: true
+            }
           },
           {
-            loader: "sass-loader" // compiles Sass to CSS
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true
+            }
           }
         ]
       },
@@ -110,9 +123,9 @@ export default merge.smart(baseConfig, {
           loader: 'url-loader',
           options: {
             limit: 10000,
-            mimetype: 'application/font-woff',
+            mimetype: 'application/font-woff'
           }
-        },
+        }
       },
       // WOFF2 Font
       {
@@ -121,7 +134,7 @@ export default merge.smart(baseConfig, {
           loader: 'url-loader',
           options: {
             limit: 10000,
-            mimetype: 'application/font-woff',
+            mimetype: 'application/font-woff'
           }
         }
       },
@@ -139,7 +152,7 @@ export default merge.smart(baseConfig, {
       // EOT Font
       {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        use: 'file-loader',
+        use: 'file-loader'
       },
       // SVG Font
       {
@@ -148,15 +161,24 @@ export default merge.smart(baseConfig, {
           loader: 'url-loader',
           options: {
             limit: 10000,
-            mimetype: 'image/svg+xml',
+            mimetype: 'image/svg+xml'
           }
         }
       },
       // Common Image Formats
       {
         test: /\.(?:ico|gif|png|jpg|jpeg|webp)$/,
-        use: 'url-loader',
-      }
+        use: 'url-loader'
+      },
+      {
+        test: /\.(html)$/,
+        use: {
+          loader: 'html-loader',
+          options: {
+            attrs: [':data-src']
+          }
+        }
+      },
     ]
   },
   resolve: {
@@ -177,9 +199,32 @@ export default merge.smart(baseConfig, {
       'node_modules'
     ]
   },
+  optimization: {
+    minimizer: process.env.E2E_BUILD
+      ? []
+      : [
+          new TerserPlugin({
+            parallel: true,
+            sourceMap: true,
+            cache: true
+          }),
+          new OptimizeCSSAssetsPlugin({
+            cssProcessorOptions: {
+              map: {
+                inline: false,
+                annotation: true
+              }
+            }
+          })
+        ]
+  },
+
   externals: [
-    'paper-css'
+    'react',
+    'paper-css',
+    'node-usb-detection',
   ],
+
   plugins: [
     /**
      * Create global constants which can be configured at compile time.
@@ -194,12 +239,10 @@ export default merge.smart(baseConfig, {
       NODE_ENV: 'production'
     }),
 
-    new UglifyJSPlugin({
-      parallel: true,
-      sourceMap: true
+    new MiniCssExtractPlugin({
+      filename: 'style.css'
     }),
 
-    new ExtractTextPlugin('style.css'),
     new CopyWebpackPlugin([
       {
         from: 'app/assets/styles',
@@ -207,9 +250,11 @@ export default merge.smart(baseConfig, {
         flatten: true,
       },
     ]),
+
     new BundleAnalyzerPlugin({
-      analyzerMode: process.env.OPEN_ANALYZER === 'true' ? 'server' : 'disabled',
+      analyzerMode:
+        process.env.OPEN_ANALYZER === 'true' ? 'server' : 'disabled',
       openAnalyzer: process.env.OPEN_ANALYZER === 'true'
-    }),
-  ],
+    })
+  ]
 });

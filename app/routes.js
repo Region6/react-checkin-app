@@ -1,34 +1,40 @@
 /* eslint flowtype-errors/show-errors: 0 */
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import { Switch, Route } from 'react-router';
-import App from './containers/App';
+import { createHistory, Link, LocationProvider, Router } from '@reach/router';
+
 import Dashboard from './containers/Dashboard';
 import Payment from './containers/Payment';
 import UpdateRegistrant from './containers/UpdateRegistrant';
 import Admin from './containers/Admin';
 
-export default inject('store')(observer(({ store }) => {
-  const UpdateRegistrantBefore = ({ component: Component, ...rest }) => {
+const UpdateRegistrantBefore = inject('store')(({ store, id }) => {
+  store.siteIdQuery = '';
+  store.userIdQuery = '';
+  if (id) {
+    store.setRegistrant(id);
+  } else {
     store.createNewRegistrant();
-    return (<Route {...rest} render={(props) => (<Component {...props} />)} />);
-  };
+  }
+  return <UpdateRegistrant />;
+});
 
-  const SetRegistrantBefore = ({ component: Component, ...rest }) => {
-    store.setRegistrant(rest.computedMatch.params.id);
-    return (<Route {...rest} render={(props) => (<Component {...props} />)} />);
-  };
+const PaymentBefore = inject('store')(({ store, id }) => {
+  if (id) {
+    store.setRegistrant(id);
+  }
+  return <Payment />;
+});
 
-  return (
-    <App>
-      <Switch>
-        <Route exact path="/" component={Dashboard} />
-        <Route exact path="/dashboard" component={Dashboard} />
-        <Route exact path="/registrant/add" component={UpdateRegistrant} />
-        <Route exact path="/registrant/:id" component={UpdateRegistrant} />
-        <Route exact path="/registrant/:id/payment" component={Payment} />
-        <Route exact path="/admin" component={Admin} />
-      </Switch>
-    </App>
-  );
-}));
+const Routes = () => (
+  <Router>
+    <Dashboard path="/" />
+    <Dashboard path="/dashboard" />
+    <UpdateRegistrantBefore path="/registrant/add" />
+    <UpdateRegistrantBefore path="/registrant/:id" />
+    <PaymentBefore path="/registrant/:id/payment" />
+    <Admin path="/admin" />
+  </Router>
+);
+
+export default Routes;

@@ -2,18 +2,24 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import { withStyles } from 'material-ui/styles';
-import Typography from 'material-ui/Typography';
-import Grid from 'material-ui/Grid';
-import Card, { CardActions, CardContent, CardMedia } from 'material-ui/Card';
-import Divider from 'material-ui/Divider';
-import Button from 'material-ui/Button';
-import ButtonBase from 'material-ui/ButtonBase';
-import { MenuItem } from 'material-ui/Menu';
-import Select from 'material-ui/Select';
-import Icon from 'material-ui/Icon';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Divider from '@material-ui/core/Divider';
+import Button from '@material-ui/core/Button';
+import ButtonBase from '@material-ui/core/ButtonBase';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import Icon from '@material-ui/core/Icon';
 import RefreshIcon from '@material-ui/icons/Refresh';
-import { FormControl, FormHelperText, FormControlLabel, FormGroup } from 'material-ui/Form';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
 import { AutoSizer } from 'react-virtualized';
 
 import FileUpload from '../components/FileUpload';
@@ -72,9 +78,9 @@ class Admin  extends Component {
   }
 
   render() {
-    const { classes, store, match, history } = this.props;
+    const { classes, store, match, navigate } = this.props;
     const { registrants } = store;
-    const goBack = () => history.push('/dashboard');
+    const goBack = () => navigate('/dashboard');
 
     const printBadges = async () => {
       let registrants = await store.getExhibitors(this.exhibitorPage);
@@ -102,9 +108,9 @@ class Admin  extends Component {
                 className={classes.breadCrumbs}
                 onClick={goBack}
               >
-                Dashboard > 
+                Dashboard >
               </ButtonBase>
-              <Typography variant="headline">
+              <Typography variant="h5">
                 Admin
               </Typography>
             </CardContent>
@@ -160,7 +166,7 @@ class Admin  extends Component {
             <Divider />
             <CardContent>
               <div className={classes.container}>
-                <Typography variant="title">
+                <Typography variant="h6">
                   Batch Exhibitor Badge Printing
                 </Typography>
                 <Select

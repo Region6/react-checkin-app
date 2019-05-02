@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "jsx": "react",
-    "target": "es2017",
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": "./app"
-  },
-  "exclude": ["node_modules", "dist"]
-}

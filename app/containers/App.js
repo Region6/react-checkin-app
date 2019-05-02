@@ -2,33 +2,40 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import CssBaseline from 'material-ui/CssBaseline';
-import { withStyles } from 'material-ui/styles';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import Button from 'material-ui/Button';
-import IconButton from 'material-ui/IconButton';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { withStyles } from '@material-ui/core/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import Fab from '@material-ui/core/Fab';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
-import Input, { InputLabel } from 'material-ui/Input';
-import { MenuItem } from 'material-ui/Menu';
-import { FormControl, FormHelperText } from 'material-ui/Form';
-import Select from 'material-ui/Select';
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
-import Snackbar from 'material-ui/Snackbar';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
+import Select from '@material-ui/core/Select';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Snackbar from '@material-ui/core/Snackbar';
 import CloseIcon from '@material-ui/icons/Close';
-import Drawer from 'material-ui/Drawer';
+import Drawer from '@material-ui/core/Drawer';
 import AddIcon from '@material-ui/icons/Add';
-import Divider from 'material-ui/Divider';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
-import { withRouter } from 'react-router';
+import Divider from '@material-ui/core/Divider';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
+import { navigate } from '../components/routerHistory';
 import SettingsDialog from '../components/SettingsDialog';
 
 const drawerWidth = 240;
@@ -116,18 +123,12 @@ class App extends Component {
   }
 
   addRegistrant = () => {
-    const { store, history } = this.props;
-    history.push('/registrant/add');
+    const { store } = this.props;
+    navigate('/registrant/add', true);
   }
 
-  navigate = path => e => {
-    const { store, history } = this.props;
-    history.push(path);
-  }
-
-  clickProgram = (id, e) => {
-    const { history } = this.props;
-    history.push(`/a/program/${id}`);
+  nav = path => e => {
+    navigate(path, true);
   }
 
   handleSnackBarClose = () => {
@@ -144,7 +145,7 @@ class App extends Component {
     const handleClose = () => {
       store.dialogs.settings = false;
     };
-    
+
     return (
       <div className={classes.root}>
         <CssBaseline />
@@ -172,7 +173,7 @@ class App extends Component {
               <ListItem button>
                 <ListItemText
                   primary="Admin"
-                  onClick={this.navigate('/admin')}
+                  onClick={this.nav('/admin')}
                 />
               </ListItem>
             </List>
@@ -188,7 +189,7 @@ class App extends Component {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="title" color="inherit" className={classes.flex}>
+            <Typography variant="h6" color="inherit" className={classes.flex}>
               Check In
             </Typography>
             <IconButton
@@ -204,16 +205,14 @@ class App extends Component {
         <main className={classes.content}>
           {this.props.children}
           {store.path === '/dashboard' || store.path === '/' ?
-            <Button
-
-              variant="fab"
+            <Fab
               color="secondary"
               aria-label="add"
               className={classes.fab}
               onClick={this.addRegistrant}
             >
               <AddIcon />
-            </Button>
+            </Fab>
             :
             null
           }
@@ -243,7 +242,7 @@ class App extends Component {
           />
         </main>
         <div className={classes.footer}>
-          <Typography variant="body1" color="inherit">
+          <Typography variant="body2" color="inherit">
             {store.stats.checkedIn} / {store.stats.totalRegistrants}
           </Typography>
         </div>
@@ -258,4 +257,4 @@ App.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withRouter(withStyles(styles)(App));
+export default withStyles(styles)(App);

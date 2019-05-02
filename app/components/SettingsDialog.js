@@ -2,22 +2,22 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import Typography from 'material-ui/Typography';
-import Button from 'material-ui/Button';
-import Divider from 'material-ui/Divider';
-import Input, { InputLabel } from 'material-ui/Input';
-import { MenuItem } from 'material-ui/Menu';
-import { FormControl, FormHelperText } from 'material-ui/Form';
-import Select from 'material-ui/Select';
-import TextField from 'material-ui/TextField';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
-import { withRouter } from 'react-router';
-import { withStyles } from 'material-ui/styles';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Select from '@material-ui/core/Select';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import { withStyles } from '@material-ui/core/styles';
 
 const drawerWidth = 240;
 const styles = theme => ({
@@ -77,7 +77,7 @@ const styles = theme => ({
   },
 });
 
-const SettingsDialog = inject('store')(observer(({ classes, store, history }) => {
+const SettingsDialog = inject('store')(observer(({ classes, store }) => {
   const getSelectedPrinter = (type) => {
     let retVal = "";
     const selected = store.getSelectedPrinter(type);
@@ -218,4 +218,4 @@ SettingsDialog.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withRouter(withStyles(styles)(SettingsDialog));
+export default withStyles(styles)(SettingsDialog);

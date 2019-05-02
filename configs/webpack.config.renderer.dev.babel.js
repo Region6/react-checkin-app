@@ -1,4 +1,4 @@
-/* eslint global-require: 0, import/no-dynamic-require: 0 */
+/* eslint global-require: off, import/no-dynamic-require: off */
 
 /**
  * Build config for development electron renderer process that uses
@@ -13,41 +13,51 @@ import webpack from 'webpack';
 import chalk from 'chalk';
 import merge from 'webpack-merge';
 import { spawn, execSync } from 'child_process';
-import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import baseConfig from './webpack.config.base';
-import CheckNodeEnv from './internals/scripts/CheckNodeEnv';
+import CheckNodeEnv from '../internals/scripts/CheckNodeEnv';
 
 CheckNodeEnv('development');
 
 const port = process.env.PORT || 1212;
 const publicPath = `http://localhost:${port}/dist`;
-const dll = path.resolve(process.cwd(), 'dll');
+const dll = path.join(__dirname, '..', 'dll');
 const manifest = path.resolve(dll, 'renderer.json');
 const appPath = path.resolve('./app');
+const requiredByDLLConfig = module.parent.filename.includes(
+  'webpack.config.renderer.dev.dll',
+);
 
 /**
  * Warn if the DLL is not built
  */
-if (!(fs.existsSync(dll) && fs.existsSync(manifest))) {
-  console.log(chalk.black.bgYellow.bold('The DLL files are missing. Sit back while we build them for you with "npm run build-dll"'));
-  execSync('npm run build-dll');
+if (!requiredByDLLConfig && !(fs.existsSync(dll) && fs.existsSync(manifest))) {
+  console.log(
+    chalk.black.bgYellow.bold(
+      'The DLL files are missing. Sit back while we build them for you with "yarn build-dll"',
+    ),
+  );
+  execSync('yarn build-dll');
 }
 
 export default merge.smart(baseConfig, {
   devtool: 'inline-source-map',
+  mode: 'development',
   target: 'electron-renderer',
   entry: [
     'babel-polyfill',
     'react-hot-loader/patch',
     `webpack-dev-server/client?http://localhost:${port}/`,
     'webpack/hot/only-dev-server',
-    path.join(__dirname, 'app/index.js'),
+    require.resolve('../app/index'),
   ],
+
   output: {
     publicPath: `http://localhost:${port}/dist/`,
-    filename: 'renderer.dev.js'
+    filename: 'renderer.dev.js',
   },
+
   module: {
     rules: [
       {
@@ -57,100 +67,45 @@ export default merge.smart(baseConfig, {
           loader: 'babel-loader',
           options: {
             cacheDirectory: true,
-            plugins: [
-              // Here, we include babel plugins that are only required for the
-              // renderer process. The 'transform-*' plugins must be included
-              // before react-hot-loader/babel
-              'transform-decorators-legacy',
-              'transform-class-properties',
-              'transform-es2015-classes',
-              'react-hot-loader/babel'
-            ],
-          }
-        }
+          },
+        },
+
       },
       {
-        test: /\.html$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'html-loader',
-        }
-      },
-      {
-        test: /\.global\.css$/,
+        test: /\.css$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: "style-loader"
           },
           {
-            loader: 'css-loader',
+            loader: "css-loader",
             options: {
               sourceMap: true,
-            },
-          }
-        ]
-      },
-      {
-        test: /^((?!\.global).)*\.css$/,
-        use: [
-          {
-            loader: 'style-loader'
-          },
-          {
-            loader: 'css-loader',
-            options: {
               modules: true,
-              sourceMap: true,
-              importLoaders: 1,
-              localIdentName: '[name]__[local]__[hash:base64:5]',
+              localIdentName: "[local]___[hash:base64:5]"
             }
           },
         ]
       },
-      // SASS support - compile all .global.scss files and pipe it to style.css
+      // Extract all .global.css to style.css as is
       {
-        test: /\.global\.scss$/,
+        test: /\.global\.css$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              publicPath: './'
+            }
           },
           {
             loader: 'css-loader',
             options: {
-              sourceMap: true,
-            },
-          },
-          {
-            loader: 'sass-loader'
+              sourceMap: true
+            }
           }
         ]
       },
-      // SASS support - compile all other .scss files and pipe it to style.css
-      {
-        test: /^((?!\.global).)*\.scss$/,
-        use: [
-          {
-            loader: "style-loader" // creates style nodes from JS strings
-          },
-          {
-            loader: "css-loader" // translates CSS into CommonJS
-          },
-          {
-            loader: "sass-loader" // compiles Sass to CSS
-          }
-        ]
-      },
-      // WOFF Font
-      {
-        test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-        use: {
-          loader: 'url-loader',
-          options: {
-            limit: 10000,
-            mimetype: 'application/font-woff',
-          }
-        },
-      },
+
       // WOFF2 Font
       {
         test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
@@ -159,8 +114,8 @@ export default merge.smart(baseConfig, {
           options: {
             limit: 10000,
             mimetype: 'application/font-woff',
-          }
-        }
+          },
+        },
       },
       // TTF Font
       {
@@ -169,9 +124,9 @@ export default merge.smart(baseConfig, {
           loader: 'url-loader',
           options: {
             limit: 10000,
-            mimetype: 'application/octet-stream'
-          }
-        }
+            mimetype: 'application/octet-stream',
+          },
+        },
       },
       // EOT Font
       {
@@ -186,15 +141,24 @@ export default merge.smart(baseConfig, {
           options: {
             limit: 10000,
             mimetype: 'image/svg+xml',
-          }
-        }
+          },
+        },
       },
       // Common Image Formats
       {
         test: /\.(?:ico|gif|png|jpg|jpeg|webp)$/,
         use: 'url-loader',
-      }
-    ]
+      },
+      {
+        test: /\.(html)$/,
+        use: {
+          loader: 'html-loader',
+          options: {
+            attrs: [':data-src']
+          }
+        }
+      },
+    ],
   },
   resolve: {
     alias: {
@@ -215,14 +179,18 @@ export default merge.smart(baseConfig, {
     ]
   },
   plugins: [
-    new webpack.DllReferencePlugin({
-      context: process.cwd(),
-      manifest: require(manifest),
-      sourceType: 'var',
-    }),
+    requiredByDLLConfig
+      ? null
+      : new webpack.DllReferencePlugin({
+          context: path.join(__dirname, '..', 'dll'),
+          manifest: require(manifest),
+          sourceType: 'var',
+        }),
+
     new webpack.HotModuleReplacementPlugin({
-      multiStep: true
+      multiStep: true,
     }),
+
     new webpack.NoEmitOnErrorsPlugin(),
 
     /**
@@ -238,12 +206,13 @@ export default merge.smart(baseConfig, {
      * 'staging', for example, by changing the ENV variables in the npm scripts
      */
     new webpack.EnvironmentPlugin({
-      NODE_ENV: 'development'
+      NODE_ENV: 'development',
     }),
+
     new webpack.LoaderOptionsPlugin({
-      debug: true
+      debug: true,
     }),
-    new ExtractTextPlugin({
+    new MiniCssExtractPlugin({
       filename: '[name].css'
     }),
     new CopyWebpackPlugin([
@@ -254,10 +223,12 @@ export default merge.smart(baseConfig, {
       },
     ]),
   ],
+
   node: {
     __dirname: false,
-    __filename: false
+    __filename: false,
   },
+
   devServer: {
     port,
     publicPath,
@@ -272,7 +243,7 @@ export default merge.smart(baseConfig, {
     watchOptions: {
       aggregateTimeout: 300,
       ignored: /node_modules/,
-      poll: 100
+      poll: 100,
     },
     historyApiFallback: {
       verbose: true,
@@ -281,18 +252,18 @@ export default merge.smart(baseConfig, {
     before() {
       if (process.env.START_HOT) {
         console.log('Starting Main Process...');
-        spawn(
-          'npm',
-          ['run', 'start-main-dev'],
-          { shell: true, env: process.env, stdio: 'inherit' }
-        )
+        spawn('npm', ['run', 'start-main-dev'], {
+          shell: true,
+          env: process.env,
+          stdio: 'inherit',
+        })
           .on('close', code => process.exit(code))
           .on('error', spawnError => console.error(spawnError));
       }
-    }
+    },
   },
   externals: [
-    'react', 
+    'react',
     'paper-css',
     'node-usb-detection',
   ]
