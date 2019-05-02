@@ -51,5 +51,4 @@ install:
 
 script:
   - echo "skipping tests"
-  - yarn package
-  - yarn release
+  - yarn package-ci
