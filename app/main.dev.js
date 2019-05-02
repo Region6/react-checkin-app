@@ -12,7 +12,6 @@
  */
 import { app, BrowserWindow, ipcMain } from 'electron';
 import fs from 'fs';
-import { setup as setupPushReceiver } from 'electron-push-receiver';
 import { autoUpdater } from "electron-updater";
 
 import MenuBuilder from './menu';
@@ -116,7 +115,6 @@ app.on('ready', async () => {
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
-  setupPushReceiver(mainWindow.webContents);
 
   ipcMain.on('getPrinters', (event, arg) => {
     console.log('Get Printers');

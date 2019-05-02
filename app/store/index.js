@@ -19,13 +19,6 @@ import Handlebars from 'handlebars';
 import HandlebarsIntl from 'handlebars-intl';
 import { map, props, mapSeries } from 'awaity';
 import PDF417 from 'pdf417';
-import {
-  START_NOTIFICATION_SERVICE,
-  NOTIFICATION_SERVICE_STARTED,
-  NOTIFICATION_SERVICE_ERROR,
-  NOTIFICATION_RECEIVED,
-  TOKEN_UPDATED,
-} from 'electron-push-receiver/src/constants';
 
 import receiptTemplate from '../assets/receipt.html';
 import badgeTemplate from '../assets/badge.html';
@@ -349,7 +342,6 @@ export default class Store {
           self.swipe.close();
         }
       );
-      // await this.setupFCM();
     } catch(e) {
       console.log(e);
     }
@@ -428,48 +420,6 @@ export default class Store {
       console.log(e);
       this.scanner = null;
     }
-  }
-
-  setupFCM = () => {
-    const self = this;
-    // Listen for service successfully started
-    ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {
-      console.log('service successfully started', token)
-    });
-
-    // Handle notification errors
-    ipcRenderer.on(NOTIFICATION_SERVICE_ERROR, (_, error) => {
-      console.log('notification error', error)
-    });
-
-    // Send FCM token to backend
-    ipcRenderer.on(TOKEN_UPDATED, async (_, token) => {
-      console.log('token updated', token)
-      const record = await this.request.get(`/add/device/${token}`);
-      return record;
-    });
-
-    // Display notification
-    ipcRenderer.on(NOTIFICATION_RECEIVED, (_, msg) => {
-      // check to see if payload contains a body string, if it doesn't consider it a silent push
-      if (msg.notification && msg.notification.body){
-        // payload has a body, so show it to the user
-        console.log('display notification', msg);
-        let myNotification = new Notification(msg.notification.title, {
-          body: msg.notification.body
-        });
-
-        myNotification.onclick = () => {
-          console.log('Notification clicked');
-        }
-      } else {
-        self.handleFcmMessage(msg.data);
-      }
-    });
-
-    const senderId = '850469790871';
-    console.log('starting service and registering a client');
-    ipcRenderer.send(START_NOTIFICATION_SERVICE, senderId);
   }
 
   getSettings = () => {
