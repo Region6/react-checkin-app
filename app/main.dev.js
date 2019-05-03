@@ -12,7 +12,7 @@
  */
 import { app, BrowserWindow, ipcMain } from 'electron';
 import fs from 'fs';
-import { autoUpdater } from "electron-updater";
+//import { autoUpdater } from "electron-updater";
 
 import MenuBuilder from './menu';
 
@@ -100,7 +100,7 @@ app.on('ready', async () => {
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
     await installExtensions();
   } else {
-    autoUpdater.checkForUpdates();
+    //autoUpdater.checkForUpdates();
   }
 
   mainWindow = new BrowserWindow({
@@ -179,11 +179,11 @@ app.on('ready', async () => {
 });
 
 // when the update has been downloaded and is ready to be installed, notify the BrowserWindow
-autoUpdater.on('update-downloaded', (info) => {
-  mainWindow.webContents.send('updateReady')
-});
+//autoUpdater.on('update-downloaded', (info) => {
+//  mainWindow.webContents.send('updateReady')
+//});
 
 // when receiving a quitAndInstall signal, quit and install the new version ;)
-ipcMain.on("quitAndInstall", (event, arg) => {
-  autoUpdater.quitAndInstall();
-});
+//ipcMain.on("quitAndInstall", (event, arg) => {
+//  autoUpdater.quitAndInstall();
+//});
