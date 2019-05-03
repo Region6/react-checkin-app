@@ -29,6 +29,21 @@ matrix:
       env:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder'
+      before_install:
+        - export NODEPATH=$(where.exe node.exe)
+        - export PROJECTDIR=$(pwd)
+        - export YARNCACHE=$(yarn cache dir)
+        - export TEMPDIR=$LOCALAPPDATA\\Temp
+        - Powershell Add-MpPreference -ExclusionProcess ${NODEPATH}
+        - Powershell Add-MpPreference -ExclusionPath ${YARNCACHE}
+        - Powershell Add-MpPreference -ExclusionPath ${PROJECTDIR}
+        - Powershell Add-MpPreference -ExclusionPath ${TEMPDIR}
+        - echo "DisableArchiveScanning..."
+        - Powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
+        - echo "DisableBehaviorMonitoring..."
+        - Powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
+        - echo "DisableRealtimeMonitoring..."
+        - Powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
 
 before_install: yarn install --network-timeout 1000000
 
