@@ -108,6 +108,12 @@ const RowDetail = inject('store')(observer(({ classes, store, rowData }) => {
             <Typography variant="body2">{rowData.city}, {rowData.state} {rowData.zipcode}</Typography>
             <Typography variant="body2">{rowData.phone}</Typography>
             <Typography variant="body2">{rowData.email}</Typography>
+            {rowData.site.length ?
+              <div>
+                <Typography variant="body2">{rowData.site[0].siteId}</Typography>
+                <Typography variant="body2">R{rowData.site[0].region}{rowData.site[0].memberType}</Typography>
+              </div> : null
+            }
           </CardContent>
         </Card>
       </Grid>
