@@ -1,7 +1,7 @@
 {
   "name": "checkin-app",
   "productName": "CheckIn",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Electron application based on React, React Router, Webpack that is used to check in registrants at the Region VI VPP Conference",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
