@@ -40,19 +40,22 @@ const Dashboard = inject('store')(observer(({ classes, store }) => {
   }
 
   const searchColumns = [
-    { header: "Registrant ID", accessor: "displayId", dataType: "String" },
-    { header: "Confirmation", accessor: "confirmation", dataType: "String" },
-    { header: "Group #", accessor: "groupConfirm", dataType: "String" },
-    { header: "Last Name", accessor: "lastName", dataType: "String" },
-    { header: "First Name", accessor: "firstName", dataType: "String" },
-    { header: "Company", accessor: "company", dataType: "String" },
+    { display: "Registrant ID", field: "displayId", dataType: "String" },
+    { display: "Confirmation", field: "confirmation", dataType: "String" },
+    { display: "Group #", field: "groupConfirm", dataType: "String" },
+    { display: "Last Name", field: "lastName", dataType: "String" },
+    { display: "First Name", field: "firstName", dataType: "String" },
+    { display: "Company", field: "organization", dataType: "String" },
+    { display: "Email", field: "email", dataType: "String" },
+    { display: "Site ID", field: "siteId", dataType: "String" },
   ];
 
   const setSearchValue = (value) => {
     store.searchValue = toJS(value);
   };
 
-  const search = () => {
+  const search = (value) => {
+    setSearchValue(value);
     store.updateFilters([toJS(store.searchValue)]);
     store.filterRegistrants();
   };
@@ -79,6 +82,7 @@ const Dashboard = inject('store')(observer(({ classes, store }) => {
           onChange={setSearchValue}
           onRequestSearch={search}
           onCancelSearch={cancelSearch}
+          searchFields={searchColumns}
         />
         <RegistrantsView />
       </Grid>

@@ -111,7 +111,7 @@ class SearchBar extends Component {
     if (this.props.onCancelSearch) {
       this.props.onCancelSearch()
     }
-  }
+  };
 
   handleKeyUp = (e) => {
     if (e.charCode === 13 || e.key === 'Enter') {
@@ -122,7 +122,7 @@ class SearchBar extends Component {
     if (this.props.onKeyUp) {
       this.props.onKeyUp(e)
     }
-  }
+  };
 
   handleRequestSearch = () => {
     if (this.props.onRequestSearch) {
@@ -131,14 +131,20 @@ class SearchBar extends Component {
         value: this.state.value
       })
     }
-  }
+  };
 
   handleChange = event => {
-    this.setState({ column: event.target.value });
-  }
+    const self = this;
+    this.setState(
+      { column: event.target.value },
+      () => {
+        self.handleRequestSearch();
+      },
+    );
+  };
 
   render () {
-    const { value } = this.state
+    const { value, column } = this.state
     const {
       cancelOnEscape,
       className,
@@ -149,6 +155,7 @@ class SearchBar extends Component {
       onRequestSearch,
       searchIcon,
       style,
+      searchFields,
       ...inputProps
     } = this.props
 
@@ -159,19 +166,18 @@ class SearchBar extends Component {
       >
         <Select
           className={classes.formControl}
-          value={this.state.column}
+          value={column}
           onChange={this.handleChange}
           inputProps={{
             name: 'column',
             id: 'column-simple',
           }}
         >
-          <MenuItem value="confirmation">Confirmation</MenuItem>
-          <MenuItem value="displayId">Registrant ID</MenuItem>
-          <MenuItem value="lastname">Last Name</MenuItem>
-          <MenuItem value="firstname">First Name</MenuItem>
-          <MenuItem value="email">Email</MenuItem>
-          <MenuItem value="organization">Company</MenuItem>
+          {searchFields.map(sf => (
+            <MenuItem key={sf.field} value={sf.field}>
+              {sf.display}
+            </MenuItem>
+          ))}
         </Select>
         <div className={classes.searchContainer}>
           <Input
