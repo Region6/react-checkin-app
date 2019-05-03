@@ -30,8 +30,6 @@ matrix:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder'
       cache: false
-      before_install:
-        - win.bat
 
 before_install: yarn install --network-timeout 1000000
 
