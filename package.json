@@ -26,11 +26,12 @@
     "postlint-styles-fix": "prettier --ignore-path .eslintignore --single-quote --write '**/*.{css,scss}'",
     "preinstall": "node ./internals/scripts/CheckYarn.js",
     "prestart": "yarn build",
-    "rebuild": "electron-rebuild",
+    "rebuild": "electron-rebuild --force",
     "start": "cross-env NODE_ENV=production electron ./app/main.prod.js",
     "start-main-dev": "cross-env HOT=1 NODE_ENV=development electron --inspect=5858 -r @babel/register ./app/main.dev.js",
     "start-renderer-dev": "cross-env NODE_ENV=development webpack-dev-server --config configs/webpack.config.renderer.dev.babel.js",
-    "release": "build"
+    "release": "build",
+    "windows-script": "win.sh"
   },
   "lint-staged": {
     "*.{js,jsx}": [
@@ -63,6 +64,7 @@
       "package.json"
     ],
     "dmg": {
+      "publish": ["github"],
       "contents": [
         {
           "x": 130,
@@ -77,17 +79,16 @@
       ]
     },
     "win": {
+      "publish": ["github"],
       "target": [
         "nsis",
         "msi"
       ]
     },
     "linux": {
+      "publish": ["github"],
       "target": [
-        "deb",
-        "rpm",
-        "snap",
-        "AppImage"
+        "deb"
       ],
       "category": "Development"
     },
@@ -181,8 +182,8 @@
     "cross-spawn": "^6.0.5",
     "css-loader": "^2.1.0",
     "detect-port": "^1.3.0",
-    "electron": "^3.1.6",
-    "electron-builder": "^20.38.4",
+    "electron": "^3.1.9",
+    "electron-builder": "^20.39.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-rebuild": "^1.8.4",
     "enzyme": "^3.8.0",
@@ -270,7 +271,8 @@
     "mobx": "^5.9.4",
     "mobx-react": "^5.4.3",
     "mobx-utils": "^5.4.0",
-    "node-hid": "^0.7.8",
+    "nan": "github:bnoordhuis/nan#fix832",
+    "node-hid": "^0.7.7",
     "paper-css": "^0.4.1",
     "pdf417": "https://github.com/mattvoss/pdf417-js",
     "prop-types": "^15.6.0",
@@ -286,7 +288,7 @@
     "react-virtualized": "^9.21.0",
     "reconnectable-websocket": "^0.1.10",
     "roboto-fontface": "^0.10.0",
-    "serialport": "^7.1.5",
+    "serialport": "^6.1.1",
     "socket.io-client": "^2.2.0",
     "source-map-support": "^0.5.12",
     "styled-components": "^4.2.0",
@@ -297,5 +299,6 @@
     "node": ">=7.x",
     "npm": ">=4.x",
     "yarn": ">=0.21.3"
-  }
+  },
+  "browserslist": "electron 1.6"
 }

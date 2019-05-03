@@ -29,6 +29,9 @@ matrix:
       env:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder'
+      before_install:
+        - ./win.sh
+
 
 before_install: yarn install --network-timeout 1000000
 
@@ -50,5 +53,4 @@ install:
   - yarn --ignore-engines
 
 script:
-  - echo "skipping tests"
   - yarn package-ci
