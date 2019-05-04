@@ -105,7 +105,7 @@ const RowDetail = inject('store')(observer(({ classes, store, rowData }) => {
             <Typography variant="body2">{rowData.title}</Typography>
             <Typography variant="body2">{rowData.address}</Typography>
             <Typography variant="body2">{rowData.address2}</Typography>
-            <Typography variant="body2">{rowData.city}, {rowData.state} {rowData.zipcode}</Typography>
+            <Typography variant="body2">{rowData.city}, {rowData.state} {rowData.zip}</Typography>
             <Typography variant="body2">{rowData.phone}</Typography>
             <Typography variant="body2">{rowData.email}</Typography>
             {rowData.site.length ?
