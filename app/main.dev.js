@@ -60,7 +60,9 @@ const print = (src, printer) => {
 
     win.show();
     win.focus();
-    win.openDevTools();
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+      win.openDevTools();
+    }
 
     console.log('sending to printer', printer);
     setTimeout(
@@ -107,6 +109,7 @@ app.on('ready', async () => {
     show: false,
     width: 1024,
     height: 728,
+    backgroundColor: '#3f51b5',
     webPreferences: {
       nativeWindowOpen: true,
       plugins: true,
