@@ -21,7 +21,7 @@
     "package-ci": "yarn postinstall && yarn build && electron-builder --publish always",
     "package-linux": "yarn build && electron-builder build --linux",
     "package-win": "yarn build && electron-builder build --win --x64",
-    "postinstall": "yarn flow-typed && electron-builder install-app-deps package.json && yarn build-dll && opencollective-postinstall",
+    "postinstall": "electron-builder install-app-deps package.json && yarn build-dll",
     "postlint-fix": "prettier --ignore-path .eslintignore --single-quote --write '**/*.{js,jsx,json,html,css,less,scss,yml}'",
     "postlint-styles-fix": "prettier --ignore-path .eslintignore --single-quote --write '**/*.{css,scss}'",
     "preinstall": "node ./internals/scripts/CheckYarn.js",
@@ -102,12 +102,14 @@
       "buildResources": "resources",
       "output": "release"
     },
-    "publish": {
-      "provider": "github",
-      "owner": "Region6",
-      "repo": "react-checkin-app",
-      "private": false
-    }
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Region6",
+        "repo": "react-checkin-app",
+        "private": false
+      }
+    ]
   },
   "repository": {
     "type": "git",
@@ -254,16 +256,19 @@
     "awaity": "^1.0.0",
     "axios": "^0.18.0",
     "bl": "^3.0.0",
-    "card-swipe": "^1.0.3",
+    "card-swipe": "mattvoss/card-swipe",
     "card-validator": "^6.1.0",
     "classnames": "^2.2.6",
     "color-convert": "^2.0.0",
+    "core-js": "3",
     "cuid": "^2.1.6",
     "dayjs": "^1.8.13",
     "devtron": "^1.4.0",
     "electron-debug": "^2.2.0",
     "electron-json-storage": "^4.1.6",
+    "electron-log": "^3.0.5",
     "electron-updater": "^4.0.6",
+    "extended-emitter": "mattvoss/extended-emitter",
     "fs-readfile-promise": "^3.0.1",
     "fuse.js": "^3.4.4",
     "handlebars": "^4.1.2",
@@ -278,7 +283,7 @@
     "mobx-react": "^5.4.3",
     "mobx-utils": "^5.4.0",
     "nan": "github:bnoordhuis/nan#fix832",
-    "node-hid": "^0.7.7",
+    "node-hid": "^0.7.8",
     "paper-css": "^0.4.1",
     "pdf417": "https://github.com/mattvoss/pdf417-js",
     "prop-types": "^15.6.0",
