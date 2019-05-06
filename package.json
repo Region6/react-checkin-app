@@ -64,7 +64,9 @@
       "package.json"
     ],
     "dmg": {
-      "publish": ["github"],
+      "publish": [
+        "github"
+      ],
       "contents": [
         {
           "x": 130,
@@ -79,14 +81,18 @@
       ]
     },
     "win": {
-      "publish": ["github"],
+      "publish": [
+        "github"
+      ],
       "target": [
         "nsis",
         "msi"
       ]
     },
     "linux": {
-      "publish": ["github"],
+      "publish": [
+        "github"
+      ],
       "target": [
         "deb"
       ],
@@ -267,7 +273,7 @@
     "lodash.concat": "^4.5.0",
     "lodash.flow": "^3.5.0",
     "logi-filter-builder": "^1.0.5",
-    "material-table": "^1.34.0",
+    "material-table": "^1.35.2",
     "mobx": "^5.9.4",
     "mobx-react": "^5.4.3",
     "mobx-utils": "^5.4.0",
