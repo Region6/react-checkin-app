@@ -235,10 +235,11 @@ class UpdateRegistrant  extends Component {
       } else {
         result = await store.saveNewRegistrant();
         if (result.data) {
-          store.filters.replace([{
+          store.updateFilters([{
             columnName: 'displayId',
             value: result.data.registrantId,
           }]);
+          store.filterRegistrants();
           navigate('/dashboard');
         }
       }
