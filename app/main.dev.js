@@ -14,7 +14,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import fs from 'fs';
 //import { autoUpdater } from "electron-updater";
 
-import MenuBuilder from './menu';
+// import MenuBuilder from './menu';
 
 const debug = require('electron-debug');
 debug();
@@ -45,7 +45,7 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-const print = (src, printer) => {
+const print = (src, printer, cb) => {
   let win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -58,9 +58,9 @@ const print = (src, printer) => {
  // if pdf is loaded start printing.
   win.webContents.on('did-finish-load', () => {
 
-    win.show();
-    win.focus();
     if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+      win.show();
+      win.focus();
       win.openDevTools();
     }
 
@@ -75,6 +75,7 @@ const print = (src, printer) => {
           },
           (success) => {
             console.log('Print job was', success);
+            cb(success);
             win = null;
           },
         );
@@ -127,7 +128,12 @@ app.on('ready', async () => {
 
   ipcMain.on('print', (event, arg) => {
     console.log('Printing...');
-    print(arg.src, arg.printer);
+    const cb = (success) => {
+      if (success) {
+        event.sender.send('snackbar:close');
+      }
+    };
+    print(arg.src, arg.printer, cb);
   });
 
   // @TODO: Use 'ready-to-show' event
@@ -177,8 +183,9 @@ app.on('ready', async () => {
       }
     }
   );
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
+  //const menuBuilder = new MenuBuilder(mainWindow);
+  //menuBuilder.buildMenu();
+  mainWindow.setMenu(null);
 });
 
 // when the update has been downloaded and is ready to be installed, notify the BrowserWindow
