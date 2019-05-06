@@ -85,7 +85,7 @@ const print = (src, printer, cb) => {
           (success) => {
             log.info('Print job was', success);
             cb(success);
-            //win = null;
+            win.close();
           },
         );
       },
