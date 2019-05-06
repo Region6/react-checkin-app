@@ -233,7 +233,10 @@ SearchBar.defaultProps = {
   placeholder: 'Search',
   searchIcon: <SearchIcon style={{ color: grey[500] }} />,
   style: null,
-  value: ''
+  value: {
+    column: 'confirmation',
+    value: '',
+  }
 }
 
 SearchBar.propTypes = {
@@ -260,7 +263,7 @@ SearchBar.propTypes = {
   /** Override the inline-styles of the root element. */
   style: PropTypes.object,
   /** The value of the text field. */
-  value: PropTypes.string
+  value: PropTypes.object
 }
 
 export default withStyles(styles)(SearchBar)
