@@ -12,7 +12,11 @@
  */
 import { app, BrowserWindow, ipcMain } from 'electron';
 import fs from 'fs';
-//import { autoUpdater } from "electron-updater";
+import { autoUpdater } from "electron-updater";
+const log = require('electron-log');
+log.transports.file.level = "debug";
+autoUpdater.logger = log;
+log.info('App starting...');
 
 // import MenuBuilder from './menu';
 
@@ -20,6 +24,11 @@ const debug = require('electron-debug');
 debug();
 
 let mainWindow = null;
+
+const sendStatusToWindow = (text) => {
+  log.info(text);
+  mainWindow.webContents.send('message', text);
+};
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -42,7 +51,7 @@ const installExtensions = async () => {
 
   return Promise
     .all(extensions.map(name => installer.default(installer[name], forceDownload)))
-    .catch(console.log);
+    .catch(log.info);
 };
 
 const print = (src, printer, cb) => {
@@ -64,7 +73,7 @@ const print = (src, printer, cb) => {
       win.openDevTools();
     }
 
-    console.log('sending to printer', printer);
+    log.info('sending to printer', printer);
     setTimeout(
       () => {
         win.webContents.print(
@@ -74,9 +83,9 @@ const print = (src, printer, cb) => {
             printBackground: true,
           },
           (success) => {
-            console.log('Print job was', success);
+            log.info('Print job was', success);
             cb(success);
-            win = null;
+            //win = null;
           },
         );
       },
@@ -119,15 +128,16 @@ app.on('ready', async () => {
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
+  autoUpdater.checkForUpdatesAndNotify();
 
   ipcMain.on('getPrinters', (event, arg) => {
-    console.log('Get Printers');
+    log.info('Get Printers');
     const printers = mainWindow.webContents.getPrinters();
     event.sender.send('gotPrinters', printers);
   });
 
   ipcMain.on('print', (event, arg) => {
-    console.log('Printing...');
+    log.info('Printing...');
     const cb = (success) => {
       if (success) {
         event.sender.send('snackbar:close');
@@ -189,11 +199,29 @@ app.on('ready', async () => {
 });
 
 // when the update has been downloaded and is ready to be installed, notify the BrowserWindow
-//autoUpdater.on('update-downloaded', (info) => {
-//  mainWindow.webContents.send('updateReady')
-//});
+autoUpdater.on('checking-for-update', () => {
+  sendStatusToWindow('Checking for update...');
+});
+autoUpdater.on('update-available', (info) => {
+  sendStatusToWindow('Update available.');
+});
+autoUpdater.on('update-not-available', (info) => {
+  sendStatusToWindow('Update not available.');
+});
+autoUpdater.on('error', (err) => {
+  sendStatusToWindow('Error in auto-updater. ' + err);
+});
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  sendStatusToWindow(log_message);
+});
+autoUpdater.on('update-downloaded', (info) => {
+  sendStatusToWindow('Update downloaded');
+});
 
 // when receiving a quitAndInstall signal, quit and install the new version ;)
-//ipcMain.on("quitAndInstall", (event, arg) => {
-//  autoUpdater.quitAndInstall();
-//});
+ipcMain.on("quitAndInstall", (event, arg) => {
+  autoUpdater.quitAndInstall();
+});
