@@ -394,10 +394,19 @@ export default class Store {
   setupMagSwipe = () => {
     const self = this;
     try {
-      this.swipe = new HID.HID(0x0801, 0x0002);
-      this.swipe.on("data", (data) => {
-        self.cardScanner.input(data.toString());
-      });
+      const devices = HID.devices();
+      console.log(devices);
+      const swipe = devices.find(d => d.vendorId === 2049 && d.productId === 2);
+      if (swipe) {
+        this.swipe = new HID.HID(swipe.path);
+        this.swipe.on("data", (data) => {
+          try {
+            self.cardScanner.input(data.toString());
+          } catch (e) {
+            console.log(e);
+          }
+        });
+      }
     } catch (e) {
       console.log(e);
     }
@@ -800,7 +809,7 @@ export default class Store {
 
   renderBadge = async (data, print) => {
     const template = this.getTemplate('badge');
-    let dirname = (print) ? `file://${rootFolder}/` : '';
+    let dirname = `file://${rootFolder}/`;
     if (process.env.NODE_ENV !== 'development' && process.env.DEBUG_PROD !== 'true') {
       dirname = dirname + "app"
     }
