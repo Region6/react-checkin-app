@@ -19,6 +19,7 @@ import Handlebars from 'handlebars';
 import HandlebarsIntl from 'handlebars-intl';
 import { map, props, mapSeries } from 'awaity';
 import PDF417 from 'pdf417';
+import io from 'socket.io-client';
 
 import receiptTemplate from '../assets/receipt.html';
 import badgeTemplate from '../assets/badge.html';
@@ -134,7 +135,10 @@ export default class Store {
     exhibitors: 0,
     general: 0,
   };
-  @observable searchValue = '';
+  @observable searchValue = {
+    column: '',
+    value: '',
+  };
   @observable ports = [];
   @observable filters = [];
   @observable sorting = [];
@@ -189,6 +193,7 @@ export default class Store {
   scanner;
   parser;
   browserHistory;
+  socket;
 
   constructor() {
     const self = this;
@@ -252,6 +257,7 @@ export default class Store {
       () => {
         console.log('settings:', this.settings.token);
         this.setupRequest();
+        this.setupWS();
       },
       { delay: 900 }
     );
@@ -260,6 +266,7 @@ export default class Store {
       () => {
         console.log('settings:', this.settings.apiUrl);
         this.setupRequest();
+        this.setupWS();
       },
       { delay: 900 }
     );
@@ -313,9 +320,16 @@ export default class Store {
         usbDetect.stopMonitoring();
       }
     );
+    ipcRenderer.on(
+      'snackbar:closes',
+      (event, arg) => {
+        self.snackBar.open = false;
+      }
+    );
     ipcRenderer.send('getPrinters');
     await this.getSettings();
     this.setupRequest();
+    this.setupWS();
     await this.setupTemplates();
     await this.getSerialDevices();
     this.setupDevices();
@@ -397,6 +411,20 @@ export default class Store {
       timeout: 45000,
       headers: {"Authorization" : `Bearer ${token}`}
     });
+  }
+
+  setupWS = () => {
+    const url = (this.settings.apiUrl) ? this.settings.apiUrl: config.apiUrl;
+    if (!this.socket) {
+      this.socket = io.connect(url);
+      this.socket.on('connect', () => {
+        console.log('socket connected');
+      });
+      this.socket.on('count', (data) => {
+        console.log(data);
+        this.stats = data;
+      });
+    }
   }
 
   setupScanner = (scanner) => {
@@ -499,6 +527,7 @@ export default class Store {
       }
     }
     this.scannerData.clear();
+    this.filterRegistrants();
   }
 
   handleFcmMessage = (msg) => {
@@ -771,7 +800,10 @@ export default class Store {
 
   renderBadge = async (data, print) => {
     const template = this.getTemplate('badge');
-    const dirname = (print) ? `file://${rootFolder}/` : '';
+    let dirname = (print) ? `file://${rootFolder}/` : '';
+    if (process.env.NODE_ENV !== 'development' && process.env.DEBUG_PROD !== 'true') {
+      dirname = dirname + "app"
+    }
     let registrants;
     if (Array.isArray(data)) {
       registrants = data;

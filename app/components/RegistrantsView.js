@@ -96,13 +96,14 @@ const RegistrantsView = inject('store')(observer(({ classes, store }) => {
   ];
   const actions = [
     rowData => ({
-      icon: rowData => rowData.attend ? <CheckCircleIcon /> : <RemoveCircleIcon />,
-      tooltip: rowData => rowData.attend ? "Checked In" : "Not Checked In",
+      icon: () => (rowData.attend === 1) ? <RemoveCircleIcon /> : <CheckCircleIcon />,
+      tooltip: (rowData.attend === 1) ? "Checked In" : "Not Checked In",
       onClick: (event, rowData) => checkIn(rowData.paddedRegId, (rowData.attend ? false : true)),
     }),
     rowData => ({
-      icon: rowData => rowData.transactions && rowData.transactions.length > 0 ? <MonetizationOnIcon /> : null,
-      tooltip: rowData => rowData.transactions && rowData.transactions.length > 0 ? "Paid" : "Not Paid",
+      icon: () => <MonetizationOnIcon />,
+      disabled: !(rowData.transactions && rowData.transactions.length > 0),
+      tooltip: (rowData.transactions && rowData.transactions.length > 0 ) ? "Paid" : "Not Paid",
     }),
     rowData => ({
       icon: () => <PrintIcon />,

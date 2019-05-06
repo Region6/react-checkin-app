@@ -67,9 +67,9 @@ class SearchBar extends Component {
     super(props)
     this.state = {
       focus: false,
-      value: this.props.value,
+      value: props.value.value,
       active: false,
-      column: 'confirmation'
+      column: props.value.column
     }
   }
 
