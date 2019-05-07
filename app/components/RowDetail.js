@@ -83,13 +83,7 @@ const RowDetail = inject('store')(observer(({ classes, store, rowData }) => {
   const editRegistrant = () => navigate(`/registrant/${rowData.paddedRegId}`);
   const payment = () => navigate(`/registrant/${rowData.paddedRegId}/payment`);
   const goToRegistrant = (regId) => (e) => {
-    store.filters = [];
-    store.filters.push(
-      {
-        columnName: 'displayId',
-        value: regId,
-      }
-    );
+    navigate(`/registrant/${regId}`);
   }
   return (
     <Grid container spacing={8}>
